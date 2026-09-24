@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hyperneolabs.github.io/review-bench/schema/run.schema.json",
+  "title": "ArmRun",
+  "description": "One arm reviewing one case: what ran, what came back, what it cost, and how every published finding was graded. The union of these records over a corpus version is the complete input to every published aggregate.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "run_id", "case_id", "corpus_version", "arm", "outcome", "grades"],
+  "properties": {
+    "schema_version": { "const": "0.1" },
+    "run_id": { "type": "string", "description": "Stable identifier unique across the benchmark." },
+    "case_id": { "type": "string" },
+    "corpus_version": { "type": "string" },
+    "arm": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["arm_id", "reviewer", "run_window"],
+      "properties": {
+        "arm_id": { "type": "string" },
+        "reviewer": { "type": "string", "description": "Engine name (self-hosted arm) or third-party product name." },
+        "model": { "type": "string", "description": "Exact model identifier and endpoint, where applicable." },
+        "prompt_hash": { "type": "string", "description": "Hash of the published prompt text this run used." },
+        "prompt_ref": { "type": "string", "description": "Path to the published prompt, under results/<corpus>/prompts/." },
+        "config": { "type": "object", "description": "Every reviewer tunable that was set, as key/value." },
+        "plan_tier": { "type": "string", "description": "Third-party arms only: the commercial plan the install used." },
+        "run_window": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["started", "ended"],
+          "properties": {
+            "started": { "type": "string", "format": "date-time" },
+            "ended": { "type": "string", "format": "date-time" }
+          }
+        }
+      }
+    },
+    "outcome": {
+      "enum": ["completed", "timeout", "refusal", "engine-error"],
+      "description": "The engine's own timeout/refusal/error is a result (graded as a miss), not an infrastructure failure; infrastructure failures are re-run and not published as outcomes."
+    },
+    "raw_output_ref": { "type": "string", "description": "Path to the unedited engine output, exactly as produced." },
+    "envelope": {
+      "description": "Parsed report for completed runs; conforms to finding-envelope.schema.json.",
+      "$ref": "https://hyperneolabs.github.io/review-bench/schema/finding-envelope.schema.json"
+    },
+    "telemetry": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Only fields the engine actually reports are present; 'cost_usd' requires provenance 'authoritative' or 'modeled' — absent means not reported, never zero.",
+      "properties": {
+        "latency_s": { "type": "number", "minimum": 0 },
+        "tokens_in": { "type": "integer", "minimum": 0 },
+        "tokens_out": { "type": "integer", "minimum": 0 },
+        "cost_usd": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["value", "provenance"],
+          "properties": {
+            "value": { "type": "number", "minimum": 0 },
+            "provenance": {
+              "enum": ["authoritative", "modeled"],
+              "description": "authoritative = reported by the engine/provider; modeled = computed from a published pricing table (recorded with the results)."
+            }
+          }
+        }
+      }
+    },
+    "grades": {
+      "type": "array",
+      "description": "One entry per published finding, plus a case-level catch verdict on bug cases. Graders were blind to arm identity; all grader judgments are retained.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["finding_ref", "grade", "graders"],
+        "properties": {
+          "finding_ref": {
+            "type": "string",
+            "description": "'findings/<i>', 'context_findings/<i>', or 'case' for the case-level catch verdict (bug cases only: caught / location-hit-description-miss / missed)."
+          },
+          "grade": {
+            "enum": ["real-actionable", "real-trivial", "wrong", "unanchorable", "caught", "location-hit-description-miss", "missed"]
+          },
+          "graders": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["grader", "grade", "note"],
+              "properties": {
+                "grader": { "type": "string", "description": "Anonymized grader label." },
+                "grade": { "type": "string" },
+                "note": { "type": "string", "description": "One-line justification; adjudication notes included when graders disagreed." }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

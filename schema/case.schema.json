@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hyperneolabs.github.io/review-bench/schema/case.schema.json",
+  "title": "Case",
+  "description": "One benchmark case: a real upstream change packaged as a review task, with provenance pinned by SHA. Bug cases carry ground truth derived from the later fix; control cases (clean changes, for false-positive measurement) omit it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "case_id", "kind", "corpus_version", "source", "language", "files"],
+  "properties": {
+    "schema_version": { "const": "0.1" },
+    "case_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "Stable identifier, e.g. 'go-redis-pipeline-ctx-cancel'."
+    },
+    "kind": { "enum": ["bug", "control"] },
+    "corpus_version": {
+      "type": "string",
+      "description": "Frozen corpus release this case belongs to, e.g. 'corpus/v0.1'."
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repo", "license", "introducing_pr", "review_base_sha", "review_head_sha", "fix_pr", "fix_sha"],
+      "description": "All SHAs are full upstream commit IDs; the case must be reconstructible from them. 'review_base_sha'/'review_head_sha' bound the diff under review (the introducing change); 'fix_sha' is the merged fix that defines ground truth.",
+      "properties": {
+        "repo": { "type": "string", "description": "owner/name on github.com or a git URL." },
+        "license": { "enum": ["MIT", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause", "ISC"] },
+        "introducing_pr": { "type": "integer", "minimum": 1 },
+        "review_base_sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "review_head_sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "fix_pr": { "type": "integer", "minimum": 1 },
+        "fix_sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "bug_report": { "type": "string", "description": "Optional linked issue URL." }
+      }
+    },
+    "language": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" },
+      "description": "Primary languages of the changed files."
+    },
+    "defect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["description", "provenance", "ground_truth"],
+      "description": "Present on bug cases only. The defect in the fix's own terms, and the lines the fix touched.",
+      "properties": {
+        "description": { "type": "string" },
+        "provenance": { "type": "string", "description": "Where the description comes from, e.g. 'fix commit message' or 'issue #123 body'." },
+        "ground_truth": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["file", "line_start", "line_end"],
+            "properties": {
+              "file": { "type": "string" },
+              "line_start": { "type": "integer", "minimum": 1 },
+              "line_end": { "type": "integer", "minimum": 1 },
+              "note": { "type": "string", "description": "What this hunk of the fix addresses." }
+            }
+          }
+        }
+      }
+    },
+    "files": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["review_diff", "fix_diff"],
+      "properties": {
+        "review_diff": { "type": "string", "description": "Path to the diff under review, relative to the case directory." },
+        "fix_diff": { "type": "string", "description": "Path to the ground-truth fix diff, relative to the case directory." }
+      }
+    },
+    "selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["nominated_in", "included_at", "criteria_version"],
+      "properties": {
+        "nominated_in": { "type": "string", "description": "Issue/PR URL of the nomination." },
+        "included_at": { "type": "string", "format": "date" },
+        "criteria_version": { "type": "string", "description": "METHODOLOGY version the inclusion was judged against." }
+      }
+    }
+  },
+  "if": { "properties": { "kind": { "const": "bug" } }, "required": ["kind"] },
+  "then": { "required": ["defect"] }
+}

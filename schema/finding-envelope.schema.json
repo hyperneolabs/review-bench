@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hyperneolabs.github.io/review-bench/schema/finding-envelope.schema.json",
+  "title": "FindingEnvelope",
+  "description": "The structured report contract every self-hosted engine arm returns for a case. This is the same envelope hyperneo-review uses in production; raw outputs are stored exactly as the engine produced them, and the parsed form of a valid output conforms to this schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["verdict", "summary", "findings"],
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": ["clean", "concerns"],
+      "description": "clean = no findings and no blocking (P0/P1) context_findings; concerns = at least one finding or a blocking context_finding."
+    },
+    "summary": {
+      "type": "string",
+      "maxLength": 2000,
+      "description": "Short closing statement, preferably a coverage statement naming what was inspected and what stayed out of scope."
+    },
+    "findings": {
+      "type": "array",
+      "maxItems": 30,
+      "items": { "$ref": "#/$defs/finding" }
+    },
+    "context_findings": {
+      "type": "array",
+      "maxItems": 30,
+      "description": "Minor pre-existing notes the change makes relevant, anchored in pre-existing code.",
+      "items": { "$ref": "#/$defs/finding" }
+    }
+  },
+  "$defs": {
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["severity", "file", "line", "title", "detail", "confidence"],
+      "properties": {
+        "severity": {
+          "type": "string",
+          "enum": ["P0", "P1", "P2"],
+          "description": "P0 = bug, security issue, data loss or release blocker. P1 = likely bug or clear repository-policy violation. P2 = minor/nit."
+        },
+        "file": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Repository-relative path of the changed file, at the reviewed revision."
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Line number in the reviewed version of the file."
+        },
+        "title": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "detail": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000,
+          "description": "What is wrong, why it matters, and the suggested fix."
+        },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "not_in_diff": {
+          "type": "boolean",
+          "description": "Set by the harness when the anchor exists in the file but not on a line the diff touched; the finding is then reported in the body instead of as an inline comment."
+        }
+      }
+    }
+  }
+}
