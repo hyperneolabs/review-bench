@@ -1,0 +1,57 @@
+{
+  "schema_version": "0.1",
+  "case_id": "grpc-parsetarget-unix-scheme",
+  "kind": "bug",
+  "corpus_version": "corpus/v0.1",
+  "source": {
+    "repo": "grpc/grpc-go",
+    "license": "Apache-2.0",
+    "introducing_pr": 1567,
+    "review_base_sha": "06233310cc312165d1a5e8c1a7bb4cb51c7f402b",
+    "review_head_sha": "3f10311ccf076b6b7cba28273df3290d42e60982",
+    "fix_pr": 1611,
+    "fix_sha": "0d57c57a68d6c3f0cf1d708ab380b10e092c759f"
+  },
+  "language": [
+    "Go"
+  ],
+  "files": {
+    "review_diff": "review.diff",
+    "fix_diff": "fix.diff"
+  },
+  "selection": {
+    "nominated_in": "https://github.com/hyperneolabs/review-bench/issues/3",
+    "included_at": "2026-09-24",
+    "criteria_version": "METHODOLOGY.md v0.1 (2026-09-24)"
+  },
+  "defect": {
+    "description": "parseTarget applies the '/' authority/endpoint split even when the target contains no '://' scheme separator, so a scheme-less target such as 'unix:/path/to/socket' is decomposed into Authority 'unix:' and Endpoint 'path/to/socket', handing the resolver a mangled endpoint instead of the original target.",
+    "provenance": "fix PR #1611 (commit 0d57c57): parseTarget returns the target unsplit when no scheme separator is present",
+    "ground_truth": [
+      {
+        "file": "resolver_conn_wrapper.go",
+        "line_start": 39,
+        "line_end": 40,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 40-41, review-head lines 39-40)"
+      },
+      {
+        "file": "resolver_conn_wrapper.go",
+        "line_start": 43,
+        "line_end": 43,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 44-44, review-head lines 43-43)"
+      },
+      {
+        "file": "resolver_conn_wrapper.go",
+        "line_start": 45,
+        "line_end": 45,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 46-46, review-head lines 45-45)"
+      },
+      {
+        "file": "resolver_conn_wrapper.go",
+        "line_start": 51,
+        "line_end": 52,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 52-53, review-head lines 51-52)"
+      }
+    ]
+  }
+}

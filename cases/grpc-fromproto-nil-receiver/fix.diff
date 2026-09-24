@@ -1,0 +1,59 @@
+diff --git a/status/status.go b/status/status.go
+index 99f1a09c..99a4cbe5 100644
+--- a/status/status.go
++++ b/status/status.go
+@@ -71,16 +71,25 @@ type Status struct {
+ 
+ // Code returns the status code contained in s.
+ func (s *Status) Code() codes.Code {
++	if s == nil || s.s == nil {
++		return codes.OK
++	}
+ 	return codes.Code(s.s.Code)
+ }
+ 
+ // Message returns the message contained in s.
+ func (s *Status) Message() string {
++	if s == nil || s.s == nil {
++		return ""
++	}
+ 	return s.s.Message
+ }
+ 
+ // Proto returns s's status as an spb.Status proto message.
+ func (s *Status) Proto() *spb.Status {
++	if s == nil {
++		return nil
++	}
+ 	return proto.Clone(s.s).(*spb.Status)
+ }
+ 
+diff --git a/status/status_test.go b/status/status_test.go
+index 23678743..9a4f39a9 100644
+--- a/status/status_test.go
++++ b/status/status_test.go
+@@ -65,6 +65,24 @@ func TestFromToProto(t *testing.T) {
+ 	}
+ }
+ 
++func TestFromNilProto(t *testing.T) {
++	tests := []*Status{nil, FromProto(nil)}
++	for _, s := range tests {
++		if c := s.Code(); c != codes.OK {
++			t.Errorf("s: %v - Expected s.Code() = OK; got %v", s, c)
++		}
++		if m := s.Message(); m != "" {
++			t.Errorf("s: %v - Expected s.Message() = \"\"; got %q", s, m)
++		}
++		if p := s.Proto(); p != nil {
++			t.Errorf("s: %v - Expected s.Proto() = nil; got %q", s, p)
++		}
++		if e := s.Err(); e != nil {
++			t.Errorf("s: %v - Expected s.Err() = nil; got %v", s, e)
++		}
++	}
++}
++
+ func TestError(t *testing.T) {
+ 	err := Error(codes.Internal, "test description")
+ 	if got, want := err.Error(), "rpc error: code = Internal desc = test description"; got != want {

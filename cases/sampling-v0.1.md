@@ -4,7 +4,8 @@
 is frozen at tag `corpus/v0.1`). Judged against [METHODOLOGY.md
 v0.1 (2026-09-24)](../METHODOLOGY.md). Per-batch candidate dispositions,
 including every exclusion and its criterion, are recorded in the batch's
-nomination issue (batch 1: [issue #1](https://github.com/hyperneolabs/review-bench/issues/1)).
+nomination issue (batch 1: [issue #1](https://github.com/hyperneolabs/review-bench/issues/1),
+batch 2: [issue #3](https://github.com/hyperneolabs/review-bench/issues/3)).
 
 This file is the written rule the methodology's §2.3 requires before any arm
 runs: how candidates were searched, how the introducing change is identified,
@@ -28,6 +29,12 @@ Batch 1 mined: `axios/axios`, `expressjs/express`, `encode/httpx`,
 `pallets/flask` (the last four yielded only excluded candidates — see the
 nomination issue; Go is unrepresented in batch 1 and queued for batch 2).
 
+Batch 2 (the Go pass) mined: `go-chi/chi`, `grpc/grpc-go`, `spf13/cobra`,
+`urfave/cli`, `stretchr/testify`, plus `containerd/containerd` (yielded only
+excluded candidates — every criteria-passing recent fix traced to an
+over-limit introducing PR; see the batch-2 nomination issue
+[#3](https://github.com/hyperneolabs/review-bench/issues/3)).
+
 ## 2. Bug-case search procedure
 
 1. Enumerate merged commits whose subject matches fix-flavored patterns
@@ -45,9 +52,10 @@ nomination issue; Go is unrepresented in batch 1 and queued for batch 2).
    changes such that no single introducing diff contains the defect, the
    candidate is excluded as *introducing-change ambiguous*.
 5. The introducing pull request's net diff (first-parent range for
-   merge-commit PRs, the squash commit for squash merges) is the review task.
-   Its changed-line count must be ≤ ~600; the count used is +/- lines in the
-   whole PR diff, not just source files.
+   merge-commit PRs, the squash commit for squash merges, and the net diff of
+   the landed commit run for PRs landed as a series of rebased commits) is
+   the review task. Its changed-line count must be ≤ ~600; the count used is
+   +/- lines in the whole PR diff, not just source files.
 
 ## 3. Ground-truth anchoring
 

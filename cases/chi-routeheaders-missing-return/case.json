@@ -1,0 +1,39 @@
+{
+  "schema_version": "0.1",
+  "case_id": "chi-routeheaders-missing-return",
+  "kind": "bug",
+  "corpus_version": "corpus/v0.1",
+  "source": {
+    "repo": "go-chi/chi",
+    "license": "MIT",
+    "introducing_pr": 503,
+    "review_base_sha": "a9fe6cac9e2a5c2b2731518145676d61aa7ca894",
+    "review_head_sha": "23b8ec2ca33dd73349ab54f7717d58e9d82c6abc",
+    "fix_pr": 1045,
+    "fix_sha": "05f1ef7bb50b8a8cb33a9dd3ba1c5b94bff0f723"
+  },
+  "language": [
+    "Go"
+  ],
+  "files": {
+    "review_diff": "review.diff",
+    "fix_diff": "fix.diff"
+  },
+  "selection": {
+    "nominated_in": "https://github.com/hyperneolabs/review-bench/issues/3",
+    "included_at": "2026-09-24",
+    "criteria_version": "METHODOLOGY.md v0.1 (2026-09-24)"
+  },
+  "defect": {
+    "description": "HeaderRouter.Handler's empty-routes branch calls next.ServeHTTP(w, r) without returning, so when no header routes are configured the middleware falls through and invokes the handler chain a second time at the end of Handler \u2014 the request is served twice.",
+    "provenance": "fix PR #1045 body (commit 05f1ef7): 'next handler to be called twice - once in the empty check and again at the end of the function'",
+    "ground_truth": [
+      {
+        "file": "middleware/route_headers.go",
+        "line_start": 86,
+        "line_end": 86,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 81-81, review-head lines 86-86)"
+      }
+    ]
+  }
+}

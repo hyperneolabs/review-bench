@@ -1,0 +1,26 @@
+diff --git a/_examples/router-walk/main.go b/_examples/router-walk/main.go
+index 378ff93..c7ae043 100644
+--- a/_examples/router-walk/main.go
++++ b/_examples/router-walk/main.go
+@@ -26,7 +26,7 @@ func main() {
+ 	r.Put("/ping", Ping)
+ 
+ 	walkFunc := func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
+-		route = strings.Replace(route, "/*/", "/", -1)
++		route = strings.ReplaceAll(route, "/*/", "/")
+ 		fmt.Printf("%s %s\n", method, route)
+ 		return nil
+ 	}
+diff --git a/tree.go b/tree.go
+index 8b1ed19..ac03d3f 100644
+--- a/tree.go
++++ b/tree.go
+@@ -854,7 +854,7 @@ func walk(r Routes, walkFn WalkFunc, parentRoute string, parentMw ...func(http.H
+ 			}
+ 
+ 			fullRoute := parentRoute + route.Pattern
+-			fullRoute = strings.Replace(fullRoute, "/*/", "/", -1)
++			fullRoute = strings.ReplaceAll(fullRoute, "/*/", "/")
+ 
+ 			if chain, ok := handler.(*ChainHandler); ok {
+ 				if err := walkFn(method, fullRoute, chain.Endpoint, append(mws, chain.Middlewares...)...); err != nil {

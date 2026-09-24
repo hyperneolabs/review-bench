@@ -1,0 +1,39 @@
+{
+  "schema_version": "0.1",
+  "case_id": "grpc-dialcontext-goroutine-leak",
+  "kind": "bug",
+  "corpus_version": "corpus/v0.1",
+  "source": {
+    "repo": "grpc/grpc-go",
+    "license": "Apache-2.0",
+    "introducing_pr": 1112,
+    "review_base_sha": "cdee119ee21e61eef7093a41ba148fa83585e143",
+    "review_head_sha": "c5a5dbc5005d9153f67df476a7b561c07b22dbc2",
+    "fix_pr": 1424,
+    "fix_sha": "4e56696c6c5a8cd7b711a1eb8936463559361da5"
+  },
+  "language": [
+    "Go"
+  ],
+  "files": {
+    "review_diff": "review.diff",
+    "fix_diff": "fix.diff"
+  },
+  "selection": {
+    "nominated_in": "https://github.com/hyperneolabs/review-bench/issues/3",
+    "included_at": "2026-09-24",
+    "criteria_version": "METHODOLOGY.md v0.1 (2026-09-24)"
+  },
+  "defect": {
+    "description": "ClientConn.lbWatcher consumes the balancer's Notify channel but never closes doneChan when that channel closes or the loop breaks; when DialContext times out before the balancer returns addresses or a connection is established, the goroutine waiting on doneChan is never released \u2014 a goroutine leak.",
+    "provenance": "fix PR #1424 body (commit 4e56696): 'The loop in ClientConn.lbWatcher breaks and doneChan never gets closed'",
+    "ground_truth": [
+      {
+        "file": "clientconn.go",
+        "line_start": 463,
+        "line_end": 463,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 613-613, review-head lines 463-463)"
+      }
+    ]
+  }
+}

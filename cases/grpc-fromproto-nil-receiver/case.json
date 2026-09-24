@@ -1,0 +1,51 @@
+{
+  "schema_version": "0.1",
+  "case_id": "grpc-fromproto-nil-receiver",
+  "kind": "bug",
+  "corpus_version": "corpus/v0.1",
+  "source": {
+    "repo": "grpc/grpc-go",
+    "license": "Apache-2.0",
+    "introducing_pr": 1171,
+    "review_base_sha": "b5071124392bfd416c713e6595ac149b387f7186",
+    "review_head_sha": "1d27587e10ceeec14017f9ebb5bf9ad3625cf58c",
+    "fix_pr": 1211,
+    "fix_sha": "84cd50a2f394888f98188c49558f7806cde76725"
+  },
+  "language": [
+    "Go"
+  ],
+  "files": {
+    "review_diff": "review.diff",
+    "fix_diff": "fix.diff"
+  },
+  "selection": {
+    "nominated_in": "https://github.com/hyperneolabs/review-bench/issues/3",
+    "included_at": "2026-09-24",
+    "criteria_version": "METHODOLOGY.md v0.1 (2026-09-24)"
+  },
+  "defect": {
+    "description": "Status.Code, Status.Message, and Status.Proto dereference the receiver or its inner status without nil checks, so a Status with a nil inner proto \u2014 which FromProto(nil) returns \u2014 panics in s.s dereference as soon as any accessor is called, as does any accessor on a nil *Status.",
+    "provenance": "fix PR #1211 (commit 84cd50a): nil guards added to all three accessors",
+    "ground_truth": [
+      {
+        "file": "status/status.go",
+        "line_start": 73,
+        "line_end": 73,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 73-73, review-head lines 73-73)"
+      },
+      {
+        "file": "status/status.go",
+        "line_start": 78,
+        "line_end": 78,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 78-78, review-head lines 78-78)"
+      },
+      {
+        "file": "status/status.go",
+        "line_start": 83,
+        "line_end": 83,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 83-83, review-head lines 83-83)"
+      }
+    ]
+  }
+}

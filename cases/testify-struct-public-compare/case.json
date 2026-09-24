@@ -1,0 +1,24 @@
+{
+  "schema_version": "0.1",
+  "case_id": "testify-struct-public-compare",
+  "kind": "control",
+  "corpus_version": "corpus/v0.1",
+  "source": {
+    "repo": "stretchr/testify",
+    "license": "MIT",
+    "introducing_pr": 1309,
+    "review_base_sha": "f36bfe3c337aa95c86f04c721acdbafb5ffb1611",
+    "review_head_sha": "c5fc9d6b6b21ea89be8480c0dc35e2977ab988f6"
+  },
+  "language": [
+    "Go"
+  ],
+  "files": {
+    "review_diff": "review.diff"
+  },
+  "selection": {
+    "nominated_in": "https://github.com/hyperneolabs/review-bench/issues/3",
+    "included_at": "2026-09-24",
+    "criteria_version": "METHODOLOGY.md v0.1 (2026-09-24)"
+  }
+}

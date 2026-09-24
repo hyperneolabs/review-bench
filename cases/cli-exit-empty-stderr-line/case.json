@@ -1,0 +1,39 @@
+{
+  "schema_version": "0.1",
+  "case_id": "cli-exit-empty-stderr-line",
+  "kind": "bug",
+  "corpus_version": "corpus/v0.1",
+  "source": {
+    "repo": "urfave/cli",
+    "license": "MIT",
+    "introducing_pr": 2237,
+    "review_base_sha": "f0b939963f443f91bbbed3d9ff14513a0ceeb86d",
+    "review_head_sha": "91ed11d72b02788b1125198e9b2296e0a39bc8df",
+    "fix_pr": 2310,
+    "fix_sha": "6ce476e539dd29b69d4c57ae83f9af1ddaffc611"
+  },
+  "language": [
+    "Go"
+  ],
+  "files": {
+    "review_diff": "review.diff",
+    "fix_diff": "fix.diff"
+  },
+  "selection": {
+    "nominated_in": "https://github.com/hyperneolabs/review-bench/issues/3",
+    "included_at": "2026-09-24",
+    "criteria_version": "METHODOLOGY.md v0.1 (2026-09-24)"
+  },
+  "defect": {
+    "description": "HandleExitCoder prints the error to ErrWriter unconditionally before calling OsExiter, so an Exit error with an empty message emits a blank line to stderr.",
+    "provenance": "fix PR #2310 body (commit 6ce476e); fixes issue #2263",
+    "ground_truth": [
+      {
+        "file": "errors.go",
+        "line_start": 153,
+        "line_end": 156,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 153-156, review-head lines 153-156)"
+      }
+    ]
+  }
+}

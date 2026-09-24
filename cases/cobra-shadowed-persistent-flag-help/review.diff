@@ -1,0 +1,398 @@
+diff --git a/cobra_test.go b/cobra_test.go
+index 46887fd..d6593a5 100644
+--- a/cobra_test.go
++++ b/cobra_test.go
+@@ -3,7 +3,6 @@ package cobra
+ import (
+ 	"bytes"
+ 	"fmt"
+-	"os"
+ 	"reflect"
+ 	"runtime"
+ 	"strings"
+@@ -13,9 +12,6 @@ import (
+ 	"github.com/spf13/pflag"
+ )
+ 
+-var _ = fmt.Println
+-var _ = os.Stderr
+-
+ var tp, te, tt, t1, tr []string
+ var rootPersPre, echoPre, echoPersPre, timesPersPre []string
+ var flagb1, flagb2, flagb3, flagbr, flagbp bool
+@@ -166,20 +162,22 @@ func flagInit() {
+ 	cmdRootWithRun.ResetFlags()
+ 	cmdSubNoRun.ResetFlags()
+ 	cmdCustomFlags.ResetFlags()
++	cmdVersion1.ResetFlags()
++	cmdVersion2.ResetFlags()
++
+ 	cmdRootNoRun.PersistentFlags().StringVarP(&flags2a, "strtwo", "t", "two", strtwoParentHelp)
+-	cmdEcho.Flags().IntVarP(&flagi1, "intone", "i", 123, "help message for flag intone")
+-	cmdTimes.Flags().IntVarP(&flagi2, "inttwo", "j", 234, "help message for flag inttwo")
+-	cmdPrint.Flags().IntVarP(&flagi3, "intthree", "i", 345, "help message for flag intthree")
+ 	cmdCustomFlags.Flags().IntVar(&flagi4, "intfour", 456, "help message for flag intfour")
+-	cmdEcho.PersistentFlags().StringVarP(&flags1, "strone", "s", "one", "help message for flag strone")
+-	cmdEcho.PersistentFlags().BoolVarP(&flagbp, "persistentbool", "p", false, "help message for flag persistentbool")
+-	cmdTimes.PersistentFlags().StringVarP(&flags2b, "strtwo", "t", "2", strtwoChildHelp)
+-	cmdPrint.PersistentFlags().StringVarP(&flags3, "strthree", "s", "three", "help message for flag strthree")
+ 	cmdEcho.Flags().BoolVarP(&flagb1, "boolone", "b", true, "help message for flag boolone")
++	cmdEcho.Flags().IntVarP(&flagi1, "intone", "i", 123, "help message for flag intone")
++	cmdEcho.PersistentFlags().BoolVarP(&flagbp, "persistentbool", "p", false, "help message for flag persistentbool")
++	cmdEcho.PersistentFlags().StringVarP(&flags1, "strone", "s", "one", "help message for flag strone")
++	cmdPrint.Flags().IntVarP(&flagi3, "intthree", "i", 345, "help message for flag intthree")
+ 	cmdTimes.Flags().BoolVarP(&flagb2, "booltwo", "c", false, "help message for flag booltwo")
++	cmdTimes.Flags().IntVarP(&flagi2, "inttwo", "j", 234, "help message for flag inttwo")
++	cmdTimes.Flags().StringVarP(&flags2b, "strtwo", "t", "2", strtwoChildHelp)
++	cmdTimes.PersistentFlags().StringVarP(&flags2b, "strtwo", "t", "2", strtwoChildHelp)
+ 	cmdPrint.Flags().BoolVarP(&flagb3, "boolthree", "b", true, "help message for flag boolthree")
+-	cmdVersion1.ResetFlags()
+-	cmdVersion2.ResetFlags()
++	cmdPrint.PersistentFlags().StringVarP(&flags3, "strthree", "s", "three", "help message for flag strthree")
+ }
+ 
+ func commandInit() {
+@@ -571,7 +569,7 @@ func TestChildCommandFlags(t *testing.T) {
+ 	if r.Error == nil {
+ 		t.Errorf("invalid input should generate error")
+ 	}
+-	if !strings.Contains(r.Error.Error(), "invalid argument \"10E\" for i10E") {
++	if !strings.Contains(r.Error.Error(), "invalid syntax") {
+ 		t.Errorf("Wrong error message displayed, \n %s", r.Error)
+ 	}
+ }
+@@ -677,7 +675,7 @@ func TestPersistentFlags(t *testing.T) {
+ 	fullSetupTest("echo times -s again -c -p test here")
+ 
+ 	if strings.Join(tt, " ") != "test here" {
+-		t.Errorf("flags didn't leave proper args remaining..%s given", tt)
++		t.Errorf("flags didn't leave proper args remaining. %s given", tt)
+ 	}
+ 
+ 	if flags1 != "again" {
+@@ -858,7 +856,6 @@ func TestFlagAccess(t *testing.T) {
+ 	}
+ 	if inherited.Lookup("strtwo") != nil {
+ 		t.Errorf("InheritedFlags shouldn not contain overwritten flag strtwo")
+-
+ 	}
+ }
+ 
+@@ -990,7 +987,7 @@ func TestFlagsBeforeCommand(t *testing.T) {
+ 
+ 	// With parsing error properly reported
+ 	x = fullSetupTest("-i10E echo")
+-	if !strings.Contains(x.Error.Error(), "invalid argument \"10E\" for i10E") {
++	if !strings.Contains(x.Error.Error(), "invalid syntax") {
+ 		t.Errorf("Wrong error message displayed, \n %s", x.Error)
+ 	}
+ 
+@@ -1185,3 +1182,23 @@ func TestUsageIsNotPrintedTwice(t *testing.T) {
+ 		t.Error("Usage output is not printed exactly once")
+ 	}
+ }
++
++func BenchmarkInheritedFlags(b *testing.B) {
++	initialize()
++	cmdEcho.AddCommand(cmdTimes)
++	b.ResetTimer()
++
++	for i := 0; i < b.N; i++ {
++		cmdTimes.InheritedFlags()
++	}
++}
++
++func BenchmarkLocalFlags(b *testing.B) {
++	initialize()
++	cmdEcho.AddCommand(cmdTimes)
++	b.ResetTimer()
++
++	for i := 0; i < b.N; i++ {
++		cmdTimes.LocalFlags()
++	}
++}
+diff --git a/command.go b/command.go
+index 50bd3bb..329bbea 100644
+--- a/command.go
++++ b/command.go
+@@ -66,6 +66,10 @@ type Command struct {
+ 	pflags *flag.FlagSet
+ 	// Flags that are declared specifically by this command (not inherited).
+ 	lflags *flag.FlagSet
++	// Inherited flags.
++	iflags *flag.FlagSet
++	// All persistent flags of cmd's parents.
++	parentsPflags *flag.FlagSet
+ 	// SilenceErrors is an option to quiet errors down stream
+ 	SilenceErrors bool
+ 	// Silence Usage is an option to silence usage when an error occurs.
+@@ -544,32 +548,18 @@ func (c *Command) SuggestionsFor(typedName string) []string {
+ 
+ // VisitParents visits all parents of the command and invokes fn on each parent.
+ func (c *Command) VisitParents(fn func(*Command)) {
+-	var traverse func(*Command) *Command
+-
+-	traverse = func(x *Command) *Command {
+-		if x != c {
+-			fn(x)
+-		}
+-		if x.HasParent() {
+-			return traverse(x.parent)
+-		}
+-		return x
++	if c.HasParent() {
++		fn(c.Parent())
++		c.Parent().VisitParents(fn)
+ 	}
+-	traverse(c)
+ }
+ 
+ // Root finds root command.
+ func (c *Command) Root() *Command {
+-	var findRoot func(*Command) *Command
+-
+-	findRoot = func(x *Command) *Command {
+-		if x.HasParent() {
+-			return findRoot(x.parent)
+-		}
+-		return x
++	if c.HasParent() {
++		return c.Parent().Root()
+ 	}
+-
+-	return findRoot(c)
++	return c
+ }
+ 
+ // ArgsLenAtDash will return the length of f.Args at the moment when a -- was
+@@ -782,6 +772,7 @@ func (c *Command) initHelpCmd() {
+ func (c *Command) ResetCommands() {
+ 	c.commands = nil
+ 	c.helpCommand = nil
++	c.parentsPflags = nil
+ }
+ 
+ // Sorts commands by their names.
+@@ -913,12 +904,8 @@ func (c *Command) DebugFlags() {
+ 		}
+ 		if x.HasFlags() {
+ 			x.flags.VisitAll(func(f *flag.Flag) {
+-				if x.HasPersistentFlags() {
+-					if x.persistentFlag(f.Name) == nil {
+-						c.Println("  -"+f.Shorthand+",", "--"+f.Name, "["+f.DefValue+"]", "", f.Value, "  [L]")
+-					} else {
+-						c.Println("  -"+f.Shorthand+",", "--"+f.Name, "["+f.DefValue+"]", "", f.Value, "  [LP]")
+-					}
++				if x.HasPersistentFlags() && x.persistentFlag(f.Name) != nil {
++					c.Println("  -"+f.Shorthand+",", "--"+f.Name, "["+f.DefValue+"]", "", f.Value, "  [LP]")
+ 				} else {
+ 					c.Println("  -"+f.Shorthand+",", "--"+f.Name, "["+f.DefValue+"]", "", f.Value, "  [L]")
+ 				}
+@@ -1077,6 +1064,7 @@ func (c *Command) Flags() *flag.FlagSet {
+ 		c.flags = flag.NewFlagSet(c.Name(), flag.ContinueOnError)
+ 		c.flags.SetOutput(c.OutOrStderr())
+ 	}
++
+ 	return c.flags
+ }
+ 
+@@ -1097,47 +1085,37 @@ func (c *Command) LocalNonPersistentFlags() *flag.FlagSet {
+ func (c *Command) LocalFlags() *flag.FlagSet {
+ 	c.mergePersistentFlags()
+ 
+-	local := flag.NewFlagSet(c.Name(), flag.ContinueOnError)
+-	c.lflags.VisitAll(func(f *flag.Flag) {
+-		local.AddFlag(f)
+-	})
+-	if !c.HasParent() {
+-		flag.CommandLine.VisitAll(func(f *flag.Flag) {
+-			if local.Lookup(f.Name) == nil {
+-				local.AddFlag(f)
+-			}
+-		})
++	if c.lflags == nil {
++		c.lflags = flag.NewFlagSet(c.Name(), flag.ContinueOnError)
++		c.lflags.SetOutput(c.OutOrStderr())
++	}
++	c.lflags.SortFlags = c.Flags().SortFlags
++
++	addToLocal := func(f *flag.Flag) {
++		if c.lflags.Lookup(f.Name) == nil && c.parentsPflags.Lookup(f.Name) == nil {
++			c.lflags.AddFlag(f)
++		}
+ 	}
+-	return local
++	c.Flags().VisitAll(addToLocal)
++	c.PersistentFlags().VisitAll(addToLocal)
++	return c.lflags
+ }
+ 
+ // InheritedFlags returns all flags which were inherited from parents commands.
+ func (c *Command) InheritedFlags() *flag.FlagSet {
+ 	c.mergePersistentFlags()
+ 
+-	inherited := flag.NewFlagSet(c.Name(), flag.ContinueOnError)
+-	local := c.LocalFlags()
+-
+-	var rmerge func(x *Command)
+-
+-	rmerge = func(x *Command) {
+-		if x.HasPersistentFlags() {
+-			x.PersistentFlags().VisitAll(func(f *flag.Flag) {
+-				if inherited.Lookup(f.Name) == nil && local.Lookup(f.Name) == nil {
+-					inherited.AddFlag(f)
+-				}
+-			})
+-		}
+-		if x.HasParent() {
+-			rmerge(x.parent)
+-		}
+-	}
+-
+-	if c.HasParent() {
+-		rmerge(c.parent)
++	if c.iflags == nil {
++		c.iflags = flag.NewFlagSet(c.Name(), flag.ContinueOnError)
+ 	}
+ 
+-	return inherited
++	local := c.LocalFlags()
++	c.parentsPflags.VisitAll(func(f *flag.Flag) {
++		if c.iflags.Lookup(f.Name) == nil && local.Lookup(f.Name) == nil {
++			c.iflags.AddFlag(f)
++		}
++	})
++	return c.iflags
+ }
+ 
+ // NonInheritedFlags returns all flags which were not inherited from parent commands.
+@@ -1222,8 +1200,9 @@ func (c *Command) persistentFlag(name string) (flag *flag.Flag) {
+ 		flag = c.PersistentFlags().Lookup(name)
+ 	}
+ 
+-	if flag == nil && c.HasParent() {
+-		flag = c.parent.persistentFlag(name)
++	if flag == nil {
++		c.updateParentsPflags()
++		flag = c.parentsPflags.Lookup(name)
+ 	}
+ 	return
+ }
+@@ -1243,38 +1222,27 @@ func (c *Command) Parent() *Command {
+ 	return c.parent
+ }
+ 
++// mergePersistentFlags merges c.PersistentFlags() to c.Flags()
++// and adds missing persistent flags of all parents.
+ func (c *Command) mergePersistentFlags() {
+-	var rmerge func(x *Command)
++	c.Flags().AddFlagSet(c.PersistentFlags())
++	c.updateParentsPflags()
++	c.Flags().AddFlagSet(c.parentsPflags)
++}
+ 
+-	// Save the set of local flags
+-	if c.lflags == nil {
+-		c.lflags = flag.NewFlagSet(c.Name(), flag.ContinueOnError)
+-		c.lflags.SetOutput(c.OutOrStderr())
+-		addtolocal := func(f *flag.Flag) {
+-			c.lflags.AddFlag(f)
+-		}
+-		c.Flags().VisitAll(addtolocal)
+-		c.PersistentFlags().VisitAll(addtolocal)
+-	}
+-	rmerge = func(x *Command) {
+-		if !x.HasParent() {
+-			flag.CommandLine.VisitAll(func(f *flag.Flag) {
+-				if x.PersistentFlags().Lookup(f.Name) == nil {
+-					x.PersistentFlags().AddFlag(f)
+-				}
+-			})
+-		}
+-		if x.HasPersistentFlags() {
+-			x.PersistentFlags().VisitAll(func(f *flag.Flag) {
+-				if c.Flags().Lookup(f.Name) == nil {
+-					c.Flags().AddFlag(f)
+-				}
+-			})
+-		}
+-		if x.HasParent() {
+-			rmerge(x.parent)
+-		}
++// updateParentsPflags updates c.parentsPflags by adding
++// new persistent flags of all parents.
++// If c.parentsPflags == nil, it makes new.
++func (c *Command) updateParentsPflags() {
++	if c.parentsPflags == nil {
++		c.parentsPflags = flag.NewFlagSet(c.Name(), flag.ContinueOnError)
++		c.parentsPflags.SetOutput(c.OutOrStderr())
++		c.parentsPflags.SortFlags = false
+ 	}
+ 
+-	rmerge(c)
++	c.Root().PersistentFlags().AddFlagSet(flag.CommandLine)
++
++	c.VisitParents(func(parent *Command) {
++		c.parentsPflags.AddFlagSet(parent.PersistentFlags())
++	})
+ }
+diff --git a/command_test.go b/command_test.go
+index 8b78ee3..3921a0b 100644
+--- a/command_test.go
++++ b/command_test.go
+@@ -6,6 +6,8 @@ import (
+ 	"os"
+ 	"reflect"
+ 	"testing"
++
++	"github.com/spf13/pflag"
+ )
+ 
+ // test to ensure hidden commands run as intended
+@@ -200,7 +202,6 @@ func TestSetOutput(t *testing.T) {
+ }
+ 
+ func TestFlagErrorFunc(t *testing.T) {
+-
+ 	cmd := &Command{
+ 		Use: "print",
+ 		RunE: func(cmd *Command, args []string) error {
+@@ -222,3 +223,38 @@ func TestFlagErrorFunc(t *testing.T) {
+ 		t.Errorf("expected %v, got %v", expected, err.Error())
+ 	}
+ }
++
++// TestSortedFlags checks,
++// if cmd.LocalFlags() is unsorted when cmd.Flags().SortFlags set to false.
++// https://github.com/spf13/cobra/issues/404
++func TestSortedFlags(t *testing.T) {
++	cmd := &Command{}
++	cmd.Flags().SortFlags = false
++	names := []string{"C", "B", "A", "D"}
++	for _, name := range names {
++		cmd.Flags().Bool(name, false, "")
++	}
++
++	i := 0
++	cmd.LocalFlags().VisitAll(func(f *pflag.Flag) {
++		if i == len(names) {
++			return
++		}
++		if contains(f.Name, names) {
++			if names[i] != f.Name {
++				t.Errorf("Incorrect order. Expected %v, got %v", names[i], f.Name)
++			}
++			i++
++		}
++	})
++}
++
++// contains checks, if s is in ss.
++func contains(s string, ss []string) bool {
++	for _, v := range ss {
++		if v == s {
++			return true
++		}
++	}
++	return false
++}

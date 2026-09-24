@@ -1,0 +1,115 @@
+diff --git a/mock/mock.go b/mock/mock.go
+index f0af824..e6ff8df 100644
+--- a/mock/mock.go
++++ b/mock/mock.go
+@@ -218,16 +218,22 @@ func (c *Call) Unset() *Call {
+ 
+ 	foundMatchingCall := false
+ 
+-	for i, call := range c.Parent.ExpectedCalls {
++	// in-place filter slice for calls to be removed - iterate from 0'th to last skipping unnecessary ones
++	var index int // write index
++	for _, call := range c.Parent.ExpectedCalls {
+ 		if call.Method == c.Method {
+ 			_, diffCount := call.Arguments.Diff(c.Arguments)
+ 			if diffCount == 0 {
+ 				foundMatchingCall = true
+-				// Remove from ExpectedCalls
+-				c.Parent.ExpectedCalls = append(c.Parent.ExpectedCalls[:i], c.Parent.ExpectedCalls[i+1:]...)
++				// Remove from ExpectedCalls - just skip it
++				continue
+ 			}
+ 		}
++		c.Parent.ExpectedCalls[index] = call
++		index++
+ 	}
++	// trim slice up to last copied index
++	c.Parent.ExpectedCalls = c.Parent.ExpectedCalls[:index]
+ 
+ 	if !foundMatchingCall {
+ 		unlockOnce.Do(c.unlock)
+diff --git a/mock/mock_test.go b/mock/mock_test.go
+index f77dfe4..260bb9c 100644
+--- a/mock/mock_test.go
++++ b/mock/mock_test.go
+@@ -569,6 +569,80 @@ func Test_Mock_UnsetIfAlreadyUnsetFails(t *testing.T) {
+ 	assert.Equal(t, 0, len(mockedService.ExpectedCalls))
+ }
+ 
++func Test_Mock_UnsetByOnMethodSpec(t *testing.T) {
++	// make a test impl object
++	var mockedService = new(TestExampleImplementation)
++
++	mock1 := mockedService.
++		On("TheExampleMethod", 1, 2, 3).
++		Return(0, nil)
++
++	assert.Equal(t, 1, len(mockedService.ExpectedCalls))
++	mock1.On("TheExampleMethod", 1, 2, 3).
++		Return(0, nil).Unset()
++
++	assert.Equal(t, 0, len(mockedService.ExpectedCalls))
++
++	assert.Panics(t, func() {
++		mock1.Unset()
++	})
++
++	assert.Equal(t, 0, len(mockedService.ExpectedCalls))
++}
++
++func Test_Mock_UnsetByOnMethodSpecAmongOthers(t *testing.T) {
++	// make a test impl object
++	var mockedService = new(TestExampleImplementation)
++
++	_, filename, line, _ := runtime.Caller(0)
++	mock1 := mockedService.
++		On("TheExampleMethod", 1, 2, 3).
++		Return(0, nil).
++		On("TheExampleMethodVariadic", 1, 2, 3, 4, 5).Once().
++		Return(nil)
++	mock1.
++		On("TheExampleMethodFuncType", Anything).
++		Return(nil)
++
++	assert.Equal(t, 3, len(mockedService.ExpectedCalls))
++	mock1.On("TheExampleMethod", 1, 2, 3).
++		Return(0, nil).Unset()
++
++	assert.Equal(t, 2, len(mockedService.ExpectedCalls))
++
++	expectedCalls := []*Call{
++		{
++			Parent:          &mockedService.Mock,
++			Method:          "TheExampleMethodVariadic",
++			Repeatability:   1,
++			Arguments:       []interface{}{1, 2, 3, 4, 5},
++			ReturnArguments: []interface{}{nil},
++			callerInfo:      []string{fmt.Sprintf("%s:%d", filename, line+4)},
++		},
++		{
++			Parent:          &mockedService.Mock,
++			Method:          "TheExampleMethodFuncType",
++			Arguments:       []interface{}{Anything},
++			ReturnArguments: []interface{}{nil},
++			callerInfo:      []string{fmt.Sprintf("%s:%d", filename, line+7)},
++		},
++	}
++
++	assert.Equal(t, 2, len(mockedService.ExpectedCalls))
++	assert.Equal(t, expectedCalls, mockedService.ExpectedCalls)
++}
++
++func Test_Mock_Unset_WithFuncPanics(t *testing.T) {
++	// make a test impl object
++	var mockedService = new(TestExampleImplementation)
++	mock1 := mockedService.On("TheExampleMethod", 1)
++	mock1.Arguments = append(mock1.Arguments, func(string) error { return nil })
++
++	assert.Panics(t, func() {
++		mock1.Unset()
++	})
++}
++
+ func Test_Mock_Return(t *testing.T) {
+ 
+ 	// make a test impl object

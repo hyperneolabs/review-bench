@@ -1,0 +1,63 @@
+{
+  "schema_version": "0.1",
+  "case_id": "testify-eventually-closed-channel-panic",
+  "kind": "bug",
+  "corpus_version": "corpus/v0.1",
+  "source": {
+    "repo": "stretchr/testify",
+    "license": "MIT",
+    "introducing_pr": 724,
+    "review_base_sha": "ae5876d09ad6d0d68dff8d969e518db26e0e7969",
+    "review_head_sha": "d84e815d441de9c64a3a2f9336c32acf1e7349d1",
+    "fix_pr": 808,
+    "fix_sha": "f1bd0923b8320ddfb0a8a9d919b5aeb8b7a4cc40"
+  },
+  "language": [
+    "Go"
+  ],
+  "files": {
+    "review_diff": "review.diff",
+    "fix_diff": "fix.diff"
+  },
+  "selection": {
+    "nominated_in": "https://github.com/hyperneolabs/review-bench/issues/3",
+    "included_at": "2026-09-24",
+    "criteria_version": "METHODOLOGY.md v0.1 (2026-09-24)"
+  },
+  "defect": {
+    "description": "Eventually runs the condition in a goroutine that sends on an unbuffered checkPassed channel and defers close(checkPassed) on return; when the timer expires first, the deferred close races the in-flight goroutine's send, and the send on the closed channel panics in the condition goroutine, crashing the test binary.",
+    "provenance": "fix PR #808 (commit f1bd0923): 'Fix panic for Eventually functions'; fixes issues #805 and #835",
+    "ground_truth": [
+      {
+        "file": "assert/assertions.go",
+        "line_start": 1458,
+        "line_end": 1458,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 1505-1505, review-head lines 1458-1458)"
+      },
+      {
+        "file": "assert/assertions.go",
+        "line_start": 1460,
+        "line_end": 1462,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 1507-1509, review-head lines 1460-1462)"
+      },
+      {
+        "file": "assert/assertions.go",
+        "line_start": 1464,
+        "line_end": 1465,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 1511-1512, review-head lines 1464-1465)"
+      },
+      {
+        "file": "assert/assertions.go",
+        "line_start": 1468,
+        "line_end": 1470,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 1515-1517, review-head lines 1468-1470)"
+      },
+      {
+        "file": "assert/assertions.go",
+        "line_start": 1473,
+        "line_end": 1476,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 1520-1523, review-head lines 1473-1476)"
+      }
+    ]
+  }
+}

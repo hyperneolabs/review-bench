@@ -1,0 +1,45 @@
+{
+  "schema_version": "0.1",
+  "case_id": "chi-recoverer-negative-index",
+  "kind": "bug",
+  "corpus_version": "corpus/v0.1",
+  "source": {
+    "repo": "go-chi/chi",
+    "license": "MIT",
+    "introducing_pr": 496,
+    "review_base_sha": "1077ab2d6c86614c1411d08a985e9bdc5e9c6c4e",
+    "review_head_sha": "98de1d836ac74406c388378b7ff29f03d185f56d",
+    "fix_pr": 633,
+    "fix_sha": "188a1675b7071f85360770e66daab3a51a977eeb"
+  },
+  "language": [
+    "Go"
+  ],
+  "files": {
+    "review_diff": "review.diff",
+    "fix_diff": "fix.diff"
+  },
+  "selection": {
+    "nominated_in": "https://github.com/hyperneolabs/review-bench/issues/3",
+    "included_at": "2026-09-24",
+    "criteria_version": "METHODOLOGY.md v0.1 (2026-09-24)"
+  },
+  "defect": {
+    "description": "prettyStack.decorateFuncCallLine slices pkg/method with strings.Index results and no -1 guard; a stack line without a '.' separator (Go 1.17+ frames can be bare, e.g. 'panic') makes the code slice with a negative index and panic inside the panic-recovery middleware.",
+    "provenance": "fix PR #633 body (commit 188a167): 'lines of the debug stack aren't guaranteed to contain a period ... don't attempt to slice with a negative index'",
+    "ground_truth": [
+      {
+        "file": "middleware/recoverer.go",
+        "line_start": 131,
+        "line_end": 135,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 127-131, review-head lines 131-135)"
+      },
+      {
+        "file": "middleware/recoverer.go",
+        "line_start": 139,
+        "line_end": 141,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 135-137, review-head lines 139-141)"
+      }
+    ]
+  }
+}

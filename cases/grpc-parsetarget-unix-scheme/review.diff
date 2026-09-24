@@ -1,0 +1,256 @@
+diff --git a/resolver/dns/dns_resolver.go b/resolver/dns/dns_resolver.go
+index bf597155..f31bbb60 100644
+--- a/resolver/dns/dns_resolver.go
++++ b/resolver/dns/dns_resolver.go
+@@ -65,8 +65,8 @@ type dnsBuilder struct {
+ }
+ 
+ // Build creates and starts a DNS resolver that watches the name resolution of the target.
+-func (b *dnsBuilder) Build(target string, cc resolver.ClientConn, opts resolver.BuildOption) (resolver.Resolver, error) {
+-	host, port, err := parseTarget(target)
++func (b *dnsBuilder) Build(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOption) (resolver.Resolver, error) {
++	host, port, err := parseTarget(target.Endpoint)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+diff --git a/resolver/dns/dns_resolver_test.go b/resolver/dns/dns_resolver_test.go
+index d25d8405..59079116 100644
+--- a/resolver/dns/dns_resolver_test.go
++++ b/resolver/dns/dns_resolver_test.go
+@@ -681,7 +681,7 @@ func testDNSResolver(t *testing.T) {
+ 	for _, a := range tests {
+ 		b := NewBuilder()
+ 		cc := &testClientConn{target: a.target}
+-		r, err := b.Build(a.target, cc, resolver.BuildOption{})
++		r, err := b.Build(resolver.Target{Endpoint: a.target}, cc, resolver.BuildOption{})
+ 		if err != nil {
+ 			t.Fatalf("%v\n", err)
+ 		}
+@@ -753,7 +753,7 @@ func testDNSResolveNow(t *testing.T) {
+ 	for _, a := range tests {
+ 		b := NewBuilder()
+ 		cc := &testClientConn{target: a.target}
+-		r, err := b.Build(a.target, cc, resolver.BuildOption{})
++		r, err := b.Build(resolver.Target{Endpoint: a.target}, cc, resolver.BuildOption{})
+ 		if err != nil {
+ 			t.Fatalf("%v\n", err)
+ 		}
+@@ -830,7 +830,7 @@ func testIPResolver(t *testing.T) {
+ 	for _, v := range tests {
+ 		b := NewBuilder()
+ 		cc := &testClientConn{target: v.target}
+-		r, err := b.Build(v.target, cc, resolver.BuildOption{})
++		r, err := b.Build(resolver.Target{Endpoint: v.target}, cc, resolver.BuildOption{})
+ 		if err != nil {
+ 			t.Fatalf("%v\n", err)
+ 		}
+@@ -887,7 +887,7 @@ func TestResolveFunc(t *testing.T) {
+ 	b := NewBuilder()
+ 	for _, v := range tests {
+ 		cc := &testClientConn{target: v.addr}
+-		r, err := b.Build(v.addr, cc, resolver.BuildOption{})
++		r, err := b.Build(resolver.Target{Endpoint: v.addr}, cc, resolver.BuildOption{})
+ 		if err == nil {
+ 			r.Close()
+ 		}
+diff --git a/resolver/manual/manual.go b/resolver/manual/manual.go
+index d9e1efeb..de2fb25b 100644
+--- a/resolver/manual/manual.go
++++ b/resolver/manual/manual.go
+@@ -39,13 +39,11 @@ type Resolver struct {
+ 	scheme string
+ 
+ 	// Fields actually belong to the resolver.
+-	target string
+-	cc     resolver.ClientConn
++	cc resolver.ClientConn
+ }
+ 
+ // Build returns itself for Resolver, because it's both a builder and a resolver.
+-func (r *Resolver) Build(target string, cc resolver.ClientConn, opts resolver.BuildOption) (resolver.Resolver, error) {
+-	r.target = target
++func (r *Resolver) Build(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOption) (resolver.Resolver, error) {
+ 	r.cc = cc
+ 	return r, nil
+ }
+diff --git a/resolver/passthrough/passthrough.go b/resolver/passthrough/passthrough.go
+index 79947c4c..4d4420aa 100644
+--- a/resolver/passthrough/passthrough.go
++++ b/resolver/passthrough/passthrough.go
+@@ -21,17 +21,13 @@
+ // test only.
+ package passthrough
+ 
+-import (
+-	"strings"
+-
+-	"google.golang.org/grpc/resolver"
+-)
++import "google.golang.org/grpc/resolver"
+ 
+ const scheme = "passthrough"
+ 
+ type passthroughBuilder struct{}
+ 
+-func (*passthroughBuilder) Build(target string, cc resolver.ClientConn, opts resolver.BuildOption) (resolver.Resolver, error) {
++func (*passthroughBuilder) Build(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOption) (resolver.Resolver, error) {
+ 	r := &passthroughResolver{
+ 		target: target,
+ 		cc:     cc,
+@@ -45,13 +41,12 @@ func (*passthroughBuilder) Scheme() string {
+ }
+ 
+ type passthroughResolver struct {
+-	target string
++	target resolver.Target
+ 	cc     resolver.ClientConn
+ }
+ 
+ func (r *passthroughResolver) start() {
+-	addr := strings.TrimPrefix(r.target, scheme+":///")
+-	r.cc.NewAddress([]resolver.Address{{Addr: addr}})
++	r.cc.NewAddress([]resolver.Address{{Addr: r.target.Endpoint}})
+ }
+ 
+ func (*passthroughResolver) ResolveNow(o resolver.ResolveNowOption) {}
+diff --git a/resolver/resolver.go b/resolver/resolver.go
+index c15aa9b5..49307e8f 100644
+--- a/resolver/resolver.go
++++ b/resolver/resolver.go
+@@ -102,13 +102,21 @@ type ClientConn interface {
+ 	NewServiceConfig(serviceConfig string)
+ }
+ 
++// Target represents a target for gRPC, as specified in:
++// https://github.com/grpc/grpc/blob/master/doc/naming.md.
++type Target struct {
++	Scheme    string
++	Authority string
++	Endpoint  string
++}
++
+ // Builder creates a resolver that will be used to watch name resolution updates.
+ type Builder interface {
+ 	// Build creates a new resolver for the given target.
+ 	//
+ 	// gRPC dial calls Build synchronously, and fails if the returned error is
+ 	// not nil.
+-	Build(target string, cc ClientConn, opts BuildOption) (Resolver, error)
++	Build(target Target, cc ClientConn, opts BuildOption) (Resolver, error)
+ 	// Scheme returns the scheme supported by this resolver.
+ 	// Scheme is defined at https://github.com/grpc/grpc/blob/master/doc/naming.md.
+ 	Scheme() string
+diff --git a/resolver_conn_wrapper.go b/resolver_conn_wrapper.go
+index 217a59e6..7d53964d 100644
+--- a/resolver_conn_wrapper.go
++++ b/resolver_conn_wrapper.go
+@@ -35,6 +35,24 @@ type ccResolverWrapper struct {
+ 	done     chan struct{}
+ }
+ 
++// split2 returns the values from strings.SplitN(s, sep, 2).
++// If sep is not found, it returns "", s instead.
++func split2(s, sep string) (string, string) {
++	spl := strings.SplitN(s, sep, 2)
++	if len(spl) < 2 {
++		return "", s
++	}
++	return spl[0], spl[1]
++}
++
++// parseTarget splits target into a struct containing scheme, authority and
++// endpoint.
++func parseTarget(target string) (ret resolver.Target) {
++	ret.Scheme, ret.Endpoint = split2(target, "://")
++	ret.Authority, ret.Endpoint = split2(ret.Endpoint, "/")
++	return ret
++}
++
+ // newCCResolverWrapper parses cc.target for scheme and gets the resolver
+ // builder for this scheme. It then builds the resolver and starts the
+ // monitoring goroutine for it.
+@@ -42,18 +60,14 @@ type ccResolverWrapper struct {
+ // This function could return nil, nil, in tests for old behaviors.
+ // TODO(bar) never return nil, nil when DNS becomes the default resolver.
+ func newCCResolverWrapper(cc *ClientConn) (*ccResolverWrapper, error) {
+-	var scheme string
+-	targetSplitted := strings.Split(cc.target, "://")
+-	if len(targetSplitted) >= 2 {
+-		scheme = targetSplitted[0]
+-	}
+-	grpclog.Infof("dialing to target with scheme: %q", scheme)
++	target := parseTarget(cc.target)
++	grpclog.Infof("dialing to target with scheme: %q", target.Scheme)
+ 
+-	rb := resolver.Get(scheme)
++	rb := resolver.Get(target.Scheme)
+ 	if rb == nil {
+ 		// TODO(bar) return error when DNS becomes the default (implemented and
+ 		// registered by DNS package).
+-		grpclog.Infof("could not get resolver for scheme: %q", scheme)
++		grpclog.Infof("could not get resolver for scheme: %q", target.Scheme)
+ 		return nil, nil
+ 	}
+ 
+@@ -65,7 +79,7 @@ func newCCResolverWrapper(cc *ClientConn) (*ccResolverWrapper, error) {
+ 	}
+ 
+ 	var err error
+-	ccr.resolver, err = rb.Build(cc.target, ccr, resolver.BuildOption{})
++	ccr.resolver, err = rb.Build(target, ccr, resolver.BuildOption{})
+ 	if err != nil {
+ 		return nil, err
+ 	}
+diff --git a/resolver_conn_wrapper_test.go b/resolver_conn_wrapper_test.go
+new file mode 100644
+index 00000000..02494230
+--- /dev/null
++++ b/resolver_conn_wrapper_test.go
+@@ -0,0 +1,47 @@
++/*
++ *
++ * Copyright 2017 gRPC authors.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ */
++
++package grpc
++
++import (
++	"testing"
++
++	"google.golang.org/grpc/resolver"
++)
++
++func TestParseTarget(t *testing.T) {
++	for _, test := range []resolver.Target{
++		{"", "", ""},
++		{"a", "", ""},
++		{"", "a", ""},
++		{"", "", "a"},
++		{"a", "b", ""},
++		{"a", "", "b"},
++		{"", "a", "b"},
++		{"a", "b", "c"},
++		{"dns", "a.server.com", "google.com"},
++		{"dns", "a.server.com", "google.com"},
++		{"dns", "a.server.com", "google.com/?a=b"},
++	} {
++		str := test.Scheme + "://" + test.Authority + "/" + test.Endpoint
++		got := parseTarget(str)
++		if got != test {
++			t.Errorf("parseTarget(%q) = %v, want %v", str, got, test)
++		}
++	}
++}

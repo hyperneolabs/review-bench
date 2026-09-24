@@ -1,0 +1,24 @@
+{
+  "schema_version": "0.1",
+  "case_id": "cli-dynamic-fish-completion",
+  "kind": "control",
+  "corpus_version": "corpus/v0.1",
+  "source": {
+    "repo": "urfave/cli",
+    "license": "MIT",
+    "introducing_pr": 2270,
+    "review_base_sha": "7f5c79799fafb227624d47c460ff9f2e0ced904e",
+    "review_head_sha": "600026fe69d2c2354a7a162d10ae43b271911a7f"
+  },
+  "language": [
+    "Go"
+  ],
+  "files": {
+    "review_diff": "review.diff"
+  },
+  "selection": {
+    "nominated_in": "https://github.com/hyperneolabs/review-bench/issues/3",
+    "included_at": "2026-09-24",
+    "criteria_version": "METHODOLOGY.md v0.1 (2026-09-24)"
+  }
+}

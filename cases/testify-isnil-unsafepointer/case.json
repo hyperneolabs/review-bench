@@ -1,0 +1,39 @@
+{
+  "schema_version": "0.1",
+  "case_id": "testify-isnil-unsafepointer",
+  "kind": "bug",
+  "corpus_version": "corpus/v0.1",
+  "source": {
+    "repo": "stretchr/testify",
+    "license": "MIT",
+    "introducing_pr": 707,
+    "review_base_sha": "f1df803a706ef8a5133970c1c25d429d5ae8c615",
+    "review_head_sha": "1ecda4918e78da66a7b6f877b913eb402b3a47c5",
+    "fix_pr": 1319,
+    "fix_sha": "9acc22213e5fbec050904b9886c6df042188cad5"
+  },
+  "language": [
+    "Go"
+  ],
+  "files": {
+    "review_diff": "review.diff",
+    "fix_diff": "fix.diff"
+  },
+  "selection": {
+    "nominated_in": "https://github.com/hyperneolabs/review-bench/issues/3",
+    "included_at": "2026-09-24",
+    "criteria_version": "METHODOLOGY.md v0.1 (2026-09-24)"
+  },
+  "defect": {
+    "description": "isNil's list of nilable reflect.Kinds omits reflect.UnsafePointer, so a nil unsafe.Pointer value is not classified as nil and Nil/NotNil assertions misjudge it.",
+    "provenance": "fix PR #1319 (commit 9acc222)",
+    "ground_truth": [
+      {
+        "file": "assert/assertions.go",
+        "line_start": 445,
+        "line_end": 445,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 533-533, review-head lines 445-445)"
+      }
+    ]
+  }
+}

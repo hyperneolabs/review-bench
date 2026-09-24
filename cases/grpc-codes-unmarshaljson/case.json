@@ -1,0 +1,24 @@
+{
+  "schema_version": "0.1",
+  "case_id": "grpc-codes-unmarshaljson",
+  "kind": "control",
+  "corpus_version": "corpus/v0.1",
+  "source": {
+    "repo": "grpc/grpc-go",
+    "license": "Apache-2.0",
+    "introducing_pr": 1720,
+    "review_base_sha": "ec61302c8eeed1f9705bc51e6606220ce21f4a60",
+    "review_head_sha": "2941ee12eb653ae6965af2c79213b60a2e875008"
+  },
+  "language": [
+    "Go"
+  ],
+  "files": {
+    "review_diff": "review.diff"
+  },
+  "selection": {
+    "nominated_in": "https://github.com/hyperneolabs/review-bench/issues/3",
+    "included_at": "2026-09-24",
+    "criteria_version": "METHODOLOGY.md v0.1 (2026-09-24)"
+  }
+}

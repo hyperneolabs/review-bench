@@ -1,7 +1,7 @@
 # Cases
 
-Corpus v0.1 is being mined in batches; batch 1 (7 bug + 5 control cases) has
-landed and the corpus is not yet frozen. Layout per frozen corpus version:
+Corpus v0.1 is being mined in batches; batches 1–2 (17 bug + 10 control cases)
+have landed and the corpus is not yet frozen. Layout per frozen corpus version:
 
 ```
 cases/

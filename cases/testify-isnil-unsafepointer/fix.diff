@@ -1,0 +1,36 @@
+diff --git a/assert/assertions.go b/assert/assertions.go
+index fa1245b..361d0bd 100644
+--- a/assert/assertions.go
++++ b/assert/assertions.go
+@@ -530,7 +530,7 @@ func isNil(object interface{}) bool {
+ 		[]reflect.Kind{
+ 			reflect.Chan, reflect.Func,
+ 			reflect.Interface, reflect.Map,
+-			reflect.Ptr, reflect.Slice},
++			reflect.Ptr, reflect.Slice, reflect.UnsafePointer},
+ 		kind)
+ 
+ 	if isNilableKind && value.IsNil() {
+diff --git a/assert/assertions_test.go b/assert/assertions_test.go
+index bdab184..b5193a5 100644
+--- a/assert/assertions_test.go
++++ b/assert/assertions_test.go
+@@ -15,6 +15,7 @@ import (
+ 	"strings"
+ 	"testing"
+ 	"time"
++	"unsafe"
+ )
+ 
+ var (
+@@ -2558,3 +2559,10 @@ func TestErrorAs(t *testing.T) {
+ 		})
+ 	}
+ }
++
++func TestIsNil(t *testing.T) {
++	var n unsafe.Pointer = nil
++	if !isNil(n) {
++		t.Fatal("fail")
++	}
++}

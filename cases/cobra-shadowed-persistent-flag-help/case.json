@@ -1,0 +1,39 @@
+{
+  "schema_version": "0.1",
+  "case_id": "cobra-shadowed-persistent-flag-help",
+  "kind": "bug",
+  "corpus_version": "corpus/v0.1",
+  "source": {
+    "repo": "spf13/cobra",
+    "license": "Apache-2.0",
+    "introducing_pr": 414,
+    "review_base_sha": "a3cd8ab85aeba3522b9b59242f3b86ddbc67f8bd",
+    "review_head_sha": "f58a8d6bd383c1594da70068e4c236136adc5496",
+    "fix_pr": 1776,
+    "fix_sha": "22b617914c8890ba20db7ceafcdc2ef4ca4817d3"
+  },
+  "language": [
+    "Go"
+  ],
+  "files": {
+    "review_diff": "review.diff",
+    "fix_diff": "fix.diff"
+  },
+  "selection": {
+    "nominated_in": "https://github.com/hyperneolabs/review-bench/issues/3",
+    "included_at": "2026-09-24",
+    "criteria_version": "METHODOLOGY.md v0.1 (2026-09-24)"
+  },
+  "defect": {
+    "description": "Command.LocalFlags' addToLocal check drops a child command's own flag whenever any parent persistent flag shares its name (it tests parentsPflags.Lookup(f.Name) != nil), so a child flag that shadows a parent persistent flag disappears from the child's local-flag help and the parent's flag is shown instead.",
+    "provenance": "fix PR #1776 body (commit 22b6179)",
+    "ground_truth": [
+      {
+        "file": "command.go",
+        "line_start": 1095,
+        "line_end": 1095,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 1508-1508, review-head lines 1095-1095)"
+      }
+    ]
+  }
+}

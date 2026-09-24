@@ -1,0 +1,24 @@
+{
+  "schema_version": "0.1",
+  "case_id": "cobra-initdefaultcompletioncmd-public",
+  "kind": "control",
+  "corpus_version": "corpus/v0.1",
+  "source": {
+    "repo": "spf13/cobra",
+    "license": "Apache-2.0",
+    "introducing_pr": 1467,
+    "review_base_sha": "2169adb5749372c64cdd303864ae8a444da6350f",
+    "review_head_sha": "860791844ed3a2e544a9b9bbbcb14144a948ad20"
+  },
+  "language": [
+    "Go"
+  ],
+  "files": {
+    "review_diff": "review.diff"
+  },
+  "selection": {
+    "nominated_in": "https://github.com/hyperneolabs/review-bench/issues/3",
+    "included_at": "2026-09-24",
+    "criteria_version": "METHODOLOGY.md v0.1 (2026-09-24)"
+  }
+}

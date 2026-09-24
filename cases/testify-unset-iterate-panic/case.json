@@ -1,0 +1,51 @@
+{
+  "schema_version": "0.1",
+  "case_id": "testify-unset-iterate-panic",
+  "kind": "bug",
+  "corpus_version": "corpus/v0.1",
+  "source": {
+    "repo": "stretchr/testify",
+    "license": "MIT",
+    "introducing_pr": 982,
+    "review_base_sha": "c31ea0312f8a96ca55801db5ebdf62119800fb70",
+    "review_head_sha": "ba1076d8b3b67cdaf7bf92c95b3641636a039be2",
+    "fix_pr": 1250,
+    "fix_sha": "2b00d33aec28e4fded71d57517ed4ec9d54cb4e2"
+  },
+  "language": [
+    "Go"
+  ],
+  "files": {
+    "review_diff": "review.diff",
+    "fix_diff": "fix.diff"
+  },
+  "selection": {
+    "nominated_in": "https://github.com/hyperneolabs/review-bench/issues/3",
+    "included_at": "2026-09-24",
+    "criteria_version": "METHODOLOGY.md v0.1 (2026-09-24)"
+  },
+  "defect": {
+    "description": "Call.Unset() removes matching entries from Parent.ExpectedCalls with an in-place append while iterating by the original range index; once a removal shifts the slice, a later match reslices past the shortened slice's end and panics.",
+    "provenance": "fix PR #1250 body (commit 2b00d33); fixes issue #1236",
+    "ground_truth": [
+      {
+        "file": "mock/mock.go",
+        "line_start": 218,
+        "line_end": 218,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 221-221, review-head lines 218-218)"
+      },
+      {
+        "file": "mock/mock.go",
+        "line_start": 223,
+        "line_end": 224,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 226-227, review-head lines 223-224)"
+      },
+      {
+        "file": "mock/mock.go",
+        "line_start": 226,
+        "line_end": 227,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 229-230, review-head lines 226-227)"
+      }
+    ]
+  }
+}

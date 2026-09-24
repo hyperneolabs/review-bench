@@ -1,0 +1,39 @@
+{
+  "schema_version": "0.1",
+  "case_id": "cobra-argsminusfirstx-flag-value",
+  "kind": "bug",
+  "corpus_version": "corpus/v0.1",
+  "source": {
+    "repo": "spf13/cobra",
+    "license": "Apache-2.0",
+    "introducing_pr": 95,
+    "review_base_sha": "3c187e904540cd62f0a197cddd6da02645a7cc5a",
+    "review_head_sha": "36aee64abe8c011e55572b30f0152fd143a32515",
+    "fix_pr": 1781,
+    "fix_sha": "6b0bd3076cfafd1c108264ed1e4aa0c0fe3f8537"
+  },
+  "language": [
+    "Go"
+  ],
+  "files": {
+    "review_diff": "review.diff",
+    "fix_diff": "fix.diff"
+  },
+  "selection": {
+    "nominated_in": "https://github.com/hyperneolabs/review-bench/issues/3",
+    "included_at": "2026-09-24",
+    "criteria_version": "METHODOLOGY.md v0.1 (2026-09-24)"
+  },
+  "defect": {
+    "description": "argsMinusFirstX removes the first occurrence of x anywhere in args without flag awareness, so when the subcommand's name appears earlier as a flag's value (e.g. 'mycli --name admin subcmd admin') the flag value is stripped and the remaining argument list is misparsed.",
+    "provenance": "fix PR #1781 (commit 6b0bd30): rewrite skips flag values when locating x",
+    "ground_truth": [
+      {
+        "file": "command.go",
+        "line_start": 333,
+        "line_end": 339,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 658-664, review-head lines 333-339)"
+      }
+    ]
+  }
+}

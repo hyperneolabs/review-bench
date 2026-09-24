@@ -1,0 +1,138 @@
+diff --git a/args.go b/args.go
+index e63e1f5e..b3acfd5c 100644
+--- a/args.go
++++ b/args.go
+@@ -180,12 +180,10 @@ func (a *ArgumentsBase[T, C, VC]) Usage() string {
+ func (a *ArgumentsBase[T, C, VC]) Parse(s []string) ([]string, error) {
+ 	tracef("calling arg%[1] parse with args %[2]", &a.Name, s)
+ 	if a.Max == 0 {
+-		fmt.Printf("WARNING args %s has max 0, not parsing argument\n", a.Name)
+-		return s, nil
++		return s, fmt.Errorf("args %s has max 0, not parsing argument", a.Name)
+ 	}
+ 	if a.Max != -1 && a.Min > a.Max {
+-		fmt.Printf("WARNING args %s has min[%d] > max[%d], not parsing argument\n", a.Name, a.Min, a.Max)
+-		return s, nil
++		return s, fmt.Errorf("args %s has min[%d] > max[%d], not parsing argument", a.Name, a.Min, a.Max)
+ 	}
+ 
+ 	count := 0
+diff --git a/args_test.go b/args_test.go
+index f87af88e..7ae33748 100644
+--- a/args_test.go
++++ b/args_test.go
+@@ -17,6 +17,34 @@ func TestArgNotSet(t *testing.T) {
+ 	require.Equal(t, "foo", arg.Get())
+ }
+ 
++func TestArgsMaxNotSet(t *testing.T) {
++	arg := &StringArgs{
++		Name:  "sa",
++		Value: "foo",
++	}
++
++	cmd := buildMinimalTestCommand()
++	cmd.Arguments = []Argument{arg}
++
++	err := cmd.Run(buildTestContext(t), []string{"foo", "bar"})
++	require.ErrorContains(t, err, "args sa has max 0, not parsing argument")
++}
++
++func TestArgsMinGtMax(t *testing.T) {
++	arg := &StringArgs{
++		Name:  "sa",
++		Value: "foo",
++		Min:   2,
++		Max:   1,
++	}
++
++	cmd := buildMinimalTestCommand()
++	cmd.Arguments = []Argument{arg}
++
++	err := cmd.Run(buildTestContext(t), []string{"foo", "bar"})
++	require.ErrorContains(t, err, "args sa has min[2] > max[1], not parsing argument")
++}
++
+ func TestArgsFloatTypes(t *testing.T) {
+ 	cmd := buildMinimalTestCommand()
+ 	var fval float64
+diff --git a/errors.go b/errors.go
+index a1188e73..f365a579 100644
+--- a/errors.go
++++ b/errors.go
+@@ -150,12 +150,10 @@ func HandleExitCoder(err error) {
+ 	}
+ 
+ 	if exitErr, ok := err.(ExitCoder); ok {
+-		if err.Error() != "" {
+-			if _, ok := exitErr.(ErrorFormatter); ok {
+-				_, _ = fmt.Fprintf(ErrWriter, "%+v\n", err)
+-			} else {
+-				_, _ = fmt.Fprintln(ErrWriter, err)
+-			}
++		if _, ok := exitErr.(ErrorFormatter); ok {
++			_, _ = fmt.Fprintf(ErrWriter, "%+v\n", err)
++		} else {
++			_, _ = fmt.Fprintln(ErrWriter, err)
+ 		}
+ 		OsExiter(exitErr.ExitCode())
+ 		return
+diff --git a/flag_bool.go b/flag_bool.go
+index 9019bea2..0f2af27b 100644
+--- a/flag_bool.go
++++ b/flag_bool.go
+@@ -76,7 +76,3 @@ func (b *boolValue) String() string {
+ }
+ 
+ func (b *boolValue) IsBoolFlag() bool { return true }
+-
+-func (b *boolValue) Count() int {
+-	return *b.count
+-}
+diff --git a/flag_test.go b/flag_test.go
+index 25b0b21e..712e9c96 100644
+--- a/flag_test.go
++++ b/flag_test.go
+@@ -3269,6 +3269,26 @@ func TestZeroValueMutexFlag(t *testing.T) {
+ 	assert.NoError(t, fl.check(&Command{}))
+ }
+ 
++func TestMutexFlagCategory(t *testing.T) {
++	cmd := buildMinimalTestCommand()
++	cmd.Category = "TestCmd"
++	cmd.MutuallyExclusiveFlags = []MutuallyExclusiveFlags{
++		{
++			Flags: [][]Flag{
++				{
++					&StringFlag{Name: "foo", Category: "Group1"},
++					&IntFlag{Name: "bar", Category: "Group1"},
++				},
++				{
++					&StringFlag{Name: "baz", Category: "Group2"},
++				},
++			},
++		},
++	}
++
++	assert.NoError(t, cmd.Run(buildTestContext(t), []string{"", "--foo", "value"}))
++}
++
+ func TestExtFlag(t *testing.T) {
+ 	var iv intValue[int64]
+ 	var ipv int64
+@@ -3467,3 +3487,15 @@ func TestGenericValue(t *testing.T) {
+ 	assert.Nil(t, g.Get())
+ 	assert.Empty(t, g.String())
+ }
++
++func TestEndValue(t *testing.T) {
++	cmd := buildMinimalTestCommand()
++	cmd.UseShortOptionHandling = true
++	cmd.Flags = []Flag{
++		&IntFlag{Name: "debug", Aliases: []string{"d"}},
++		&IntFlag{Name: "count", Aliases: []string{"c"}},
++	}
++
++	assert.Error(t, cmd.Run(buildTestContext(t), []string{"foo", "-cd="}))
++	assert.Error(t, cmd.Run(buildTestContext(t), []string{"foo", "-cd=s"}))
++}

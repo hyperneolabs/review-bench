@@ -1,0 +1,24 @@
+{
+  "schema_version": "0.1",
+  "case_id": "chi-replaceall-refactor",
+  "kind": "control",
+  "corpus_version": "corpus/v0.1",
+  "source": {
+    "repo": "go-chi/chi",
+    "license": "MIT",
+    "introducing_pr": 1046,
+    "review_base_sha": "05f1ef7bb50b8a8cb33a9dd3ba1c5b94bff0f723",
+    "review_head_sha": "142fada90f83e2f41f29552110d342de09f96781"
+  },
+  "language": [
+    "Go"
+  ],
+  "files": {
+    "review_diff": "review.diff"
+  },
+  "selection": {
+    "nominated_in": "https://github.com/hyperneolabs/review-bench/issues/3",
+    "included_at": "2026-09-24",
+    "criteria_version": "METHODOLOGY.md v0.1 (2026-09-24)"
+  }
+}

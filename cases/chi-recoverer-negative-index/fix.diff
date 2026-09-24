@@ -1,0 +1,59 @@
+diff --git a/middleware/recoverer.go b/middleware/recoverer.go
+index 785b18c..d673f13 100644
+--- a/middleware/recoverer.go
++++ b/middleware/recoverer.go
+@@ -124,17 +124,18 @@ func (s prettyStack) decorateFuncCallLine(line string, useColor bool, num int) (
+ 	// addr := line[idx:]
+ 	method := ""
+ 
+-	idx = strings.LastIndex(pkg, string(os.PathSeparator))
+-	if idx < 0 {
+-		idx = strings.Index(pkg, ".")
+-		method = pkg[idx:]
+-		pkg = pkg[0:idx]
++	if idx := strings.LastIndex(pkg, string(os.PathSeparator)); idx < 0 {
++		if idx := strings.Index(pkg, "."); idx > 0 {
++			method = pkg[idx:]
++			pkg = pkg[0:idx]
++		}
+ 	} else {
+ 		method = pkg[idx+1:]
+ 		pkg = pkg[0 : idx+1]
+-		idx = strings.Index(method, ".")
+-		pkg += method[0:idx]
+-		method = method[idx:]
++		if idx := strings.Index(method, "."); idx > 0 {
++			pkg += method[0:idx]
++			method = method[idx:]
++		}
+ 	}
+ 	pkgColor := nYellow
+ 	methodColor := bGreen
+diff --git a/middleware/recoverer_test.go b/middleware/recoverer_test.go
+new file mode 100644
+index 0000000..a2ee383
+--- /dev/null
++++ b/middleware/recoverer_test.go
+@@ -0,0 +1,22 @@
++package middleware
++
++import (
++	"net/http"
++	"net/http/httptest"
++	"testing"
++
++	"github.com/go-chi/chi/v5"
++)
++
++func TestRecoverer(t *testing.T) {
++	r := chi.NewRouter()
++
++	r.Use(Recoverer)
++	r.Get("/", func(http.ResponseWriter, *http.Request) { panic("foo") })
++
++	ts := httptest.NewServer(r)
++	defer ts.Close()
++
++	res, _ := testRequest(t, ts, "GET", "/", nil)
++	assertEqual(t, res.StatusCode, http.StatusInternalServerError)
++}
