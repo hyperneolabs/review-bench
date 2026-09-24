@@ -1,0 +1,51 @@
+{
+  "schema_version": "0.1",
+  "case_id": "axios-socket-listener-request-leak",
+  "kind": "bug",
+  "corpus_version": "corpus/v0.1",
+  "source": {
+    "repo": "axios/axios",
+    "license": "MIT",
+    "introducing_pr": 10788,
+    "review_base_sha": "be3336014e01f9a4fc1f8aef15303cf7daaf58db",
+    "review_head_sha": "4709a48fa2717ba97f43f5432d48ca4e26c2d326",
+    "fix_pr": 11091,
+    "fix_sha": "e8147e6ae25a74793e48b4e00e2f98bc303f5b29"
+  },
+  "language": [
+    "JavaScript"
+  ],
+  "files": {
+    "review_diff": "review.diff",
+    "fix_diff": "fix.diff"
+  },
+  "selection": {
+    "nominated_in": "https://github.com/hyperneolabs/review-bench/issues/1",
+    "included_at": "2026-09-24",
+    "criteria_version": "METHODOLOGY.md v0.1 (2026-09-24)"
+  },
+  "defect": {
+    "description": "The http adapter installs a once-per-socket 'error' listener whose closure retains the request context that was installing it; on pooled keep-alive sockets that get reassigned, the retained context leaks (memory leak).",
+    "provenance": "fix PR #11091 title and summary (commit e8147e6)",
+    "ground_truth": [
+      {
+        "file": "lib/adapters/http.js",
+        "line_start": 55,
+        "line_end": 55,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 69-69, review-head lines 55-55)"
+      },
+      {
+        "file": "lib/adapters/http.js",
+        "line_start": 951,
+        "line_end": 955,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 1270-1274, review-head lines 951-955)"
+      },
+      {
+        "file": "lib/adapters/http.js",
+        "line_start": 957,
+        "line_end": 962,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 1276-1281, review-head lines 957-962)"
+      }
+    ]
+  }
+}

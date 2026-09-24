@@ -43,17 +43,21 @@ This benchmark publishes the whole chain:
 See [METHODOLOGY.md](METHODOLOGY.md) for the full protocol, including what
 this benchmark deliberately does **not** claim.
 
-## Status: skeleton (v0.1)
+## Status: corpus mining (batch 1 landed)
 
-This repository currently contains the methodology draft, the data schemas,
-and the layout. **There is no data in it yet.** The first corpus drop and the
-first results are pending; until a `results/` entry exists for a corpus
+The methodology draft and schemas are published; corpus mining is under way.
+Batch 1 (2026-09-24) landed 6 bug cases and 5 control cases — real merged
+upstream PRs with pinned SHAs — and the sampling rule that governed them. The
+corpus is **not yet frozen**: until the `corpus/v0.1` tag and manifest exist,
+the set can still grow, and until a `results/` entry exists for a corpus
 version, nothing here ranks anything. This section will be updated — never
 quietly deleted — as drops land.
 
 - [x] Methodology v0.1 (draft for public comment)
 - [x] Case / run / report schemas
-- [ ] Corpus v0.1 (known-bug cases + clean controls, with provenance)
+- [ ] Corpus v0.1 (known-bug cases + clean controls, with provenance) —
+      batch 1 landed 2026-09-24: 6 bug + 5 control cases (axios, express,
+      httpx, serde_json); mining continues, not yet frozen at `corpus/v0.1`
 - [ ] First multi-engine results on corpus v0.1
 - [ ] Third-party tool arms
 
@@ -62,8 +66,9 @@ quietly deleted — as drops land.
 ```
 METHODOLOGY.md   benchmark protocol (corpus, arms, grading, disclosures)
 schema/          JSON schemas: case manifests, arm run records, report envelopes
-cases/           the corpus, one directory per case (empty until first drop)
+cases/           the corpus, one directory per case (batch 1 landed; grows until frozen)
 results/         per-arm outputs and aggregate tables (empty until first drop)
+tools/           case validation + corpus build scripts
 CHANGELOG.md     versioned changes to methodology, corpus, and results
 ```
 

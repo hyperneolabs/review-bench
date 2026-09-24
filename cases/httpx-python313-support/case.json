@@ -1,0 +1,24 @@
+{
+  "schema_version": "0.1",
+  "case_id": "httpx-python313-support",
+  "kind": "control",
+  "corpus_version": "corpus/v0.1",
+  "source": {
+    "repo": "encode/httpx",
+    "license": "BSD-3-Clause",
+    "introducing_pr": 3460,
+    "review_base_sha": "26d48e0634e6ee9cdc0533996db289ce4b430177",
+    "review_head_sha": "c7c13f18a5af4c64c649881b2fe8dbd72a519c32"
+  },
+  "language": [
+    "Python"
+  ],
+  "files": {
+    "review_diff": "review.diff"
+  },
+  "selection": {
+    "nominated_in": "https://github.com/hyperneolabs/review-bench/issues/1",
+    "included_at": "2026-09-24",
+    "criteria_version": "METHODOLOGY.md v0.1 (2026-09-24)"
+  }
+}

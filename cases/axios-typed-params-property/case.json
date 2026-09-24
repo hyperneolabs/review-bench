@@ -1,0 +1,24 @@
+{
+  "schema_version": "0.1",
+  "case_id": "axios-typed-params-property",
+  "kind": "control",
+  "corpus_version": "corpus/v0.1",
+  "source": {
+    "repo": "axios/axios",
+    "license": "MIT",
+    "introducing_pr": 11081,
+    "review_base_sha": "b72d3ef190b599bf95e89bf79c46311e8ff7e1b0",
+    "review_head_sha": "3077e62097726d22ba30f1cb847d7a07050e339a"
+  },
+  "language": [
+    "TypeScript"
+  ],
+  "files": {
+    "review_diff": "review.diff"
+  },
+  "selection": {
+    "nominated_in": "https://github.com/hyperneolabs/review-bench/issues/1",
+    "included_at": "2026-09-24",
+    "criteria_version": "METHODOLOGY.md v0.1 (2026-09-24)"
+  }
+}

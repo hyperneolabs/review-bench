@@ -1,0 +1,26 @@
+diff --git a/src/value/ser.rs b/src/value/ser.rs
+index e869ae1..b292f98 100644
+--- a/src/value/ser.rs
++++ b/src/value/ser.rs
+@@ -505,6 +505,10 @@ impl serde::Serializer for MapKeySerializer {
+         Ok(value.to_string())
+     }
+ 
++    fn serialize_i128(self, value: i128) -> Result<String> {
++        Ok(value.to_string())
++    }
++
+     fn serialize_u8(self, value: u8) -> Result<String> {
+         Ok(value.to_string())
+     }
+@@ -521,6 +525,10 @@ impl serde::Serializer for MapKeySerializer {
+         Ok(value.to_string())
+     }
+ 
++    fn serialize_u128(self, value: u128) -> Result<String> {
++        Ok(value.to_string())
++    }
++
+     fn serialize_f32(self, value: f32) -> Result<String> {
+         if value.is_finite() {
+             Ok(ryu::Buffer::new().format_finite(value).to_owned())

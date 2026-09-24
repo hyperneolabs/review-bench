@@ -1,0 +1,25 @@
+diff --git a/.github/workflows/test-suite.yml b/.github/workflows/test-suite.yml
+index ce3df5d..ae70a6b 100644
+--- a/.github/workflows/test-suite.yml
++++ b/.github/workflows/test-suite.yml
+@@ -14,7 +14,7 @@ jobs:
+ 
+     strategy:
+       matrix:
+-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
++        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+ 
+     steps:
+       - uses: "actions/checkout@v4"
+diff --git a/pyproject.toml b/pyproject.toml
+index 9e67191..675d2ad 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -25,6 +25,7 @@ classifiers = [
+     "Programming Language :: Python :: 3.10",
+     "Programming Language :: Python :: 3.11",
+     "Programming Language :: Python :: 3.12",
++    "Programming Language :: Python :: 3.13",
+     "Topic :: Internet :: WWW/HTTP",
+ ]
+ dependencies = [

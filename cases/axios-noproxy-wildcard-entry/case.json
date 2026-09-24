@@ -1,0 +1,39 @@
+{
+  "schema_version": "0.1",
+  "case_id": "axios-noproxy-wildcard-entry",
+  "kind": "bug",
+  "corpus_version": "corpus/v0.1",
+  "source": {
+    "repo": "axios/axios",
+    "license": "MIT",
+    "introducing_pr": 10661,
+    "review_base_sha": "8023035109c9de959ca47a64658dd97258d5eca7",
+    "review_head_sha": "fb3befb6daac6cad26b2e54094d0f2d9e47f24df",
+    "fix_pr": 11053,
+    "fix_sha": "ff60b43277c32a5b2f7589c917db16d8e043c0d4"
+  },
+  "language": [
+    "JavaScript"
+  ],
+  "files": {
+    "review_diff": "review.diff",
+    "fix_diff": "fix.diff"
+  },
+  "selection": {
+    "nominated_in": "https://github.com/hyperneolabs/review-bench/issues/1",
+    "included_at": "2026-09-24",
+    "criteria_version": "METHODOLOGY.md v0.1 (2026-09-24)"
+  },
+  "defect": {
+    "description": "NO_PROXY wildcard handling treats '*' as a bypass-all only when the entire variable is exactly '*'; a '*' entry inside a comma- or space-separated list is not honored.",
+    "provenance": "fix PR #11053 summary (commit ff60b43)",
+    "ground_truth": [
+      {
+        "file": "lib/helpers/shouldBypassProxy.js",
+        "line_start": 83,
+        "line_end": 83,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 302-302, review-head lines 83-83)"
+      }
+    ]
+  }
+}

@@ -1,0 +1,148 @@
+diff --git a/PRE_RELEASE_CHANGELOG.md b/PRE_RELEASE_CHANGELOG.md
+index b057a69..99b9666 100644
+--- a/PRE_RELEASE_CHANGELOG.md
++++ b/PRE_RELEASE_CHANGELOG.md
+@@ -8,6 +8,7 @@
+ 
+ ## Bug Fixes
+ 
++- **Node HTTP adapter - keep-alive memory retention:** Reused a module-scoped socket error listener so pooled keep-alive sockets no longer retain the adapter context, response body, and buffers from the request that first used each socket. Socket errors continue to destroy only the currently active request. (**#11091**)
+ - **XHR Adapter - navigation-canceled requests:** A response that reaches `loadend` with status 0 is now rejected as an `ECONNABORTED` error instead of resolving as a success with an empty body. Firefox 152 stopped firing `error` and `abort` for requests canceled by a document navigation, leaving `loadend` as the only handler that runs, so those requests were settling as successful responses. Rejecting with `ECONNABORTED` matches what `onabort` raised on Firefox 151, so the outcome an application sees is unchanged by that update. Reads over `file:`, which some environments report as status 0 on success, still resolve, whether the scheme appears on the request URL, is inherited from a `file:` page origin by a relative request URL, or appears only on `responseURL`. Because no response was received, the rejection is not suppressed by `validateStatus`, matching how `onerror` and `onabort` already behave. (**#11094**, closes **#11093**)
+ - **Request error stacks:** Preserved original request failures when custom `Error` stack instrumentation returns non-string data or throws during optional stack decoration. (**#11109**, closes **#11108**)
+ - **Interceptor storage:** Removed trailing interceptor tombstones after ejection so repeated register-then-eject cycles no longer grow the handlers array, while preserving its public array shape, interceptor iteration behavior, and interceptor ID identity across registrations. (**#11070**)
+diff --git a/lib/adapters/http.js b/lib/adapters/http.js
+index 3553361..d56f2cb 100755
+--- a/lib/adapters/http.js
++++ b/lib/adapters/http.js
+@@ -67,6 +67,15 @@ const isHttps = /https:?/;
+ const kAxiosSocketListener = Symbol('axios.http.socketListener');
+ const kAxiosCurrentReq = Symbol('axios.http.currentReq');
+ 
++// A shared listener avoids retaining an adapter context for the lifetime of a
++// pooled socket. EventEmitter invokes listeners with `this` set to the emitter.
++function handleSocketError(err) {
++  const current = this[kAxiosCurrentReq];
++  if (current && !current.destroyed) {
++    current.destroy(err);
++  }
++}
++
+ // Tags HttpsProxyAgent instances installed by setProxy() so the redirect path
+ // can strip them without clobbering a user-supplied agent that happens to be
+ // an HttpsProxyAgent.
+@@ -1267,18 +1276,10 @@ export default isHttpAdapterSupported &&
+           socket.setKeepAlive(true, 1000 * 60);
+         }
+ 
+-        // Install a single 'error' listener per socket (not per request) to avoid
+-        // accumulating listeners on pooled keep-alive sockets that get reassigned
+-        // to new requests before the previous request's 'close' fires (issue #10780).
+-        // The listener is bound to the socket's currently-active request via a
+-        // symbol, which is swapped as the socket is reassigned.
++        // Install one shared 'error' listener per socket. The symbol follows the
++        // currently-active request as pooled sockets are reassigned (issue #10780).
+         if (!socket[kAxiosSocketListener]) {
+-          socket.on('error', function handleSocketError(err) {
+-            const current = socket[kAxiosCurrentReq];
+-            if (current && !current.destroyed) {
+-              current.destroy(err);
+-            }
+-          });
++          socket.on('error', handleSocketError);
+           socket[kAxiosSocketListener] = true;
+         }
+ 
+diff --git a/tests/unit/adapters/http.test.js b/tests/unit/adapters/http.test.js
+index 98127ba..bb939fa 100644
+--- a/tests/unit/adapters/http.test.js
++++ b/tests/unit/adapters/http.test.js
+@@ -6259,6 +6259,89 @@ describe('supports http with nodejs', () => {
+       }
+     });
+ 
++    it('should reuse one context-free error listener across different sockets', async () => {
++      const noop = () => {};
++      const sockets = [new EventEmitter(), new EventEmitter()];
++
++      for (const socket of sockets) {
++        socket.setKeepAlive = noop;
++        socket.on('error', noop);
++      }
++
++      const createdRequests = [];
++      const transport = {
++        request() {
++          const socket = sockets[createdRequests.length];
++          const req = new (class MockRequest extends EventEmitter {
++            constructor() {
++              super();
++              this.destroyed = false;
++            }
++
++            setTimeout() {}
++
++            write() {}
++
++            end() {
++              this.emit('socket', socket);
++            }
++
++            destroy(err) {
++              if (this.destroyed) {
++                return;
++              }
++
++              this.destroyed = true;
++              err && this.emit('error', err);
++              this.emit('close');
++            }
++          })();
++
++          createdRequests.push(req);
++          return req;
++        },
++      };
++
++      const pending = sockets.map((_, index) =>
++        axios
++          .get(`http://example.com/socket-${index}`, {
++            transport,
++            maxRedirects: 0,
++          })
++          .catch((err) => err)
++      );
++
++      await setTimeoutAsync(0);
++
++      const axiosListeners = sockets.map((socket) =>
++        socket.listeners('error').filter((listener) => listener !== noop)
++      );
++
++      assert.strictEqual(axiosListeners[0].length, 1);
++      assert.strictEqual(axiosListeners[1].length, 1);
++      assert.strictEqual(
++        axiosListeners[0][0],
++        axiosListeners[1][0],
++        'different sockets should share the same module-scope listener'
++      );
++
++      sockets[0].emit('error', Object.assign(new Error('first socket failed'), { code: 'EPIPE' }));
++      assert.strictEqual(createdRequests[0].destroyed, true);
++      assert.strictEqual(createdRequests[1].destroyed, false);
++
++      sockets[1].emit(
++        'error',
++        Object.assign(new Error('second socket failed'), { code: 'ECONNRESET' })
++      );
++
++      const errors = await Promise.all(pending);
++      assert.ok(errors[0] instanceof AxiosError);
++      assert.strictEqual(errors[0].code, 'EPIPE');
++      assert.ok(errors[1] instanceof AxiosError);
++      assert.strictEqual(errors[1].code, 'ECONNRESET');
++      assert.strictEqual(createdRequests[1].destroyed, true);
++    });
++
+     it('should not accumulate socket error listeners when a pooled socket is reassigned before the previous request closes (regression #10780)', async () => {
+       const noop = () => {};
+       const socket = new EventEmitter();

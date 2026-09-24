@@ -1,0 +1,24 @@
+{
+  "schema_version": "0.1",
+  "case_id": "axios-httpstatus-rfc9110-aliases",
+  "kind": "control",
+  "corpus_version": "corpus/v0.1",
+  "source": {
+    "repo": "axios/axios",
+    "license": "MIT",
+    "introducing_pr": 11082,
+    "review_base_sha": "1ac4aeb77ac1b33b29c885aa1bea93d5a05e7bfd",
+    "review_head_sha": "39955a6ebed53217a524a3c8c7e5568fc0faa4bd"
+  },
+  "language": [
+    "JavaScript"
+  ],
+  "files": {
+    "review_diff": "review.diff"
+  },
+  "selection": {
+    "nominated_in": "https://github.com/hyperneolabs/review-bench/issues/1",
+    "included_at": "2026-09-24",
+    "criteria_version": "METHODOLOGY.md v0.1 (2026-09-24)"
+  }
+}

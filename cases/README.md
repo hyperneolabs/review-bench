@@ -1,14 +1,17 @@
 # Cases
 
-Empty until the first corpus drop. Layout per frozen corpus version:
+Corpus v0.1 is being mined in batches; batch 1 (7 bug + 5 control cases) has
+landed and the corpus is not yet frozen. Layout per frozen corpus version:
 
 ```
 cases/
+  sampling-v0.1.md        the written sampling rule for v0.1 mining
   corpus-v0.1.json        frozen manifest: every case_id + kind + SHA provenance
+                          (committed at freeze time, not yet present)
   <case-id>/
     case.json             conforms to schema/case.schema.json
     review.diff           the diff under review (the introducing change)
-    fix.diff              the ground-truth fix (bug cases)
+    fix.diff              the ground-truth fix (bug cases only)
 ```
 
 - Bug cases and clean controls live side by side, distinguished by `kind`.
@@ -17,5 +20,6 @@ cases/
 - A case is never edited after its corpus version is tagged — corrections
   require a new corpus version (see
   [METHODOLOGY.md §2.3](../METHODOLOGY.md#23-versioning-and-freezing)).
+- Validate locally: `python3 tools/validate_cases.py` from the repository root.
 
 Case nominations: see [the contributing section](../README.md#contributing).

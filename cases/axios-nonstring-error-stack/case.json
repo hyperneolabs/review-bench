@@ -1,0 +1,51 @@
+{
+  "schema_version": "0.1",
+  "case_id": "axios-nonstring-error-stack",
+  "kind": "bug",
+  "corpus_version": "corpus/v0.1",
+  "source": {
+    "repo": "axios/axios",
+    "license": "MIT",
+    "introducing_pr": 10660,
+    "review_base_sha": "fb3befb6daac6cad26b2e54094d0f2d9e47f24df",
+    "review_head_sha": "363185461b90b1b78845dc8a99a1f103d9b122a1",
+    "fix_pr": 11109,
+    "fix_sha": "a75bf44647e5132e39b778730394b0a2b983265c"
+  },
+  "language": [
+    "JavaScript"
+  ],
+  "files": {
+    "review_diff": "review.diff",
+    "fix_diff": "fix.diff"
+  },
+  "selection": {
+    "nominated_in": "https://github.com/hyperneolabs/review-bench/issues/1",
+    "included_at": "2026-09-24",
+    "criteria_version": "METHODOLOGY.md v0.1 (2026-09-24)"
+  },
+  "defect": {
+    "description": "The stack-decoration block in Axios.prototype.request's catch handler guards dummy.stack only for truthiness; a non-string stack (e.g. from a patched global Error captureStackTrace) crashes the decoration with a type error.",
+    "provenance": "fix PR #11109 body (commit a75bf44); fixes issue #11108",
+    "ground_truth": [
+      {
+        "file": "lib/core/Axios.js",
+        "line_start": 49,
+        "line_end": 52,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 49-52, review-head lines 49-52)"
+      },
+      {
+        "file": "lib/core/Axios.js",
+        "line_start": 54,
+        "line_end": 54,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 54-54, review-head lines 54-54)"
+      },
+      {
+        "file": "lib/core/Axios.js",
+        "line_start": 56,
+        "line_end": 57,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 56-57, review-head lines 56-57)"
+      }
+    ]
+  }
+}

@@ -21,8 +21,8 @@
     "source": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["repo", "license", "introducing_pr", "review_base_sha", "review_head_sha", "fix_pr", "fix_sha"],
-      "description": "All SHAs are full upstream commit IDs; the case must be reconstructible from them. 'review_base_sha'/'review_head_sha' bound the diff under review (the introducing change); 'fix_sha' is the merged fix that defines ground truth.",
+      "required": ["repo", "license", "introducing_pr", "review_base_sha", "review_head_sha"],
+      "description": "All SHAs are full upstream commit IDs; the case must be reconstructible from them. 'review_base_sha'/'review_head_sha' bound the diff under review (the introducing change for bug cases; the clean change itself for controls). 'fix_pr'/'fix_sha' are required on bug cases only — the merged fix that defines ground truth.",
       "properties": {
         "repo": { "type": "string", "description": "owner/name on github.com or a git URL." },
         "license": { "enum": ["MIT", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause", "ISC"] },
@@ -68,10 +68,10 @@
     "files": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["review_diff", "fix_diff"],
+      "required": ["review_diff"],
       "properties": {
         "review_diff": { "type": "string", "description": "Path to the diff under review, relative to the case directory." },
-        "fix_diff": { "type": "string", "description": "Path to the ground-truth fix diff, relative to the case directory." }
+        "fix_diff": { "type": "string", "description": "Path to the ground-truth fix diff, relative to the case directory. Bug cases only; controls omit it." }
       }
     },
     "selection": {
@@ -85,6 +85,16 @@
       }
     }
   },
-  "if": { "properties": { "kind": { "const": "bug" } }, "required": ["kind"] },
-  "then": { "required": ["defect"] }
+  "allOf": [
+    {
+      "if": { "properties": { "kind": { "const": "bug" } }, "required": ["kind"] },
+      "then": {
+        "required": ["defect"],
+        "properties": {
+          "source": { "required": ["fix_pr", "fix_sha"] },
+          "files": { "required": ["fix_diff"] }
+        }
+      }
+    }
+  ]
 }

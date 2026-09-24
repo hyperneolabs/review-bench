@@ -1,0 +1,69 @@
+{
+  "schema_version": "0.1",
+  "case_id": "axios-nullish-interceptor-handlers",
+  "kind": "bug",
+  "corpus_version": "corpus/v0.1",
+  "source": {
+    "repo": "axios/axios",
+    "license": "MIT",
+    "introducing_pr": 11087,
+    "review_base_sha": "609dacd8cce089adc7720e11cd62405adf3b6867",
+    "review_head_sha": "712e02373f1c5ac72fdf5da16f04838338ba817e",
+    "fix_pr": 11118,
+    "fix_sha": "2d2a21af8a433089474a2149781799c93acbcf3c"
+  },
+  "language": [
+    "JavaScript"
+  ],
+  "files": {
+    "review_diff": "review.diff",
+    "fix_diff": "fix.diff"
+  },
+  "selection": {
+    "nominated_in": "https://github.com/hyperneolabs/review-bench/issues/1",
+    "included_at": "2026-09-24",
+    "criteria_version": "METHODOLOGY.md v0.1 (2026-09-24)"
+  },
+  "defect": {
+    "description": "syncHandlerEntries() reads handlers.length before checking that handlers exists, so a falsy/ejected-to-nullish handlers value crashes interceptor synchronization.",
+    "provenance": "fix PR #11118 body (commit 2d2a21a); fixes issue #11114",
+    "ground_truth": [
+      {
+        "file": "lib/core/InterceptorManager.js",
+        "line_start": 6,
+        "line_end": 7,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 6-7, review-head lines 6-7)"
+      },
+      {
+        "file": "lib/core/InterceptorManager.js",
+        "line_start": 14,
+        "line_end": 14,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 14-14, review-head lines 14-14)"
+      },
+      {
+        "file": "lib/core/InterceptorManager.js",
+        "line_start": 19,
+        "line_end": 20,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 19-20, review-head lines 19-20)"
+      },
+      {
+        "file": "lib/core/InterceptorManager.js",
+        "line_start": 31,
+        "line_end": 31,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 31-31, review-head lines 31-31)"
+      },
+      {
+        "file": "lib/core/InterceptorManager.js",
+        "line_start": 63,
+        "line_end": 63,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 63-63, review-head lines 63-63)"
+      },
+      {
+        "file": "lib/core/InterceptorManager.js",
+        "line_start": 149,
+        "line_end": 149,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 149-149, review-head lines 149-149)"
+      }
+    ]
+  }
+}

@@ -1,0 +1,54 @@
+diff --git a/lib/response.js b/lib/response.js
+index bc672434..e3c30974 100644
+--- a/lib/response.js
++++ b/lib/response.js
+@@ -162,10 +162,8 @@ res.send = function send(body) {
+   var etagFn = app.get('etag fn')
+   var generateETag = !this.get('ETag') && typeof etagFn === 'function'
+ 
+-  // Because Content-Length and Transfer-Encoding can't be present in the response headers together,
+-  // Content-Length should be added only if there is no Transfer-Encoding header
+   var len;
+-  if (chunk !== undefined && !this.get('Transfer-Encoding')) {
++  if (chunk !== undefined) {
+     if (Buffer.isBuffer(chunk)) {
+       // get length of Buffer
+       len = chunk.length
+@@ -179,7 +177,11 @@ res.send = function send(body) {
+       len = chunk.length
+     }
+ 
+-    this.set('Content-Length', len);
++    // Because Content-Length and Transfer-Encoding can't be present in the response headers together,
++    // Content-Length should be added only if there is no Transfer-Encoding header
++    if (!this.get('Transfer-Encoding')) {
++      this.set('Content-Length', len);
++    }
+   }
+ 
+   // populate ETag
+diff --git a/test/res.send.js b/test/res.send.js
+index f38ffde9..e765c8c6 100644
+--- a/test/res.send.js
++++ b/test/res.send.js
+@@ -616,5 +616,20 @@ describe('res', function(){
+           .expect(200, '', done);
+       })
+     });
++
++    it('should still generate an ETag', function(done){
++      var app = express();
++
++      app.use(function(_, res){
++        res.set('Transfer-Encoding', 'chunked').send('hello');
++      });
++
++      request(app)
++        .get('/')
++        .expect(utils.shouldNotHaveHeader('Content-Length'))
++        .expect(utils.shouldHaveHeader('Transfer-Encoding'))
++        .expect('ETag', 'W/"5-qvTGHdzF6KLavt4PO0gs2a6pQ00"')
++        .expect(200, 'hello', done);
++    })
+   })
+ })

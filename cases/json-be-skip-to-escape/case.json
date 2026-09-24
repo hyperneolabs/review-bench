@@ -1,0 +1,51 @@
+{
+  "schema_version": "0.1",
+  "case_id": "json-be-skip-to-escape",
+  "kind": "bug",
+  "corpus_version": "corpus/v0.1",
+  "source": {
+    "repo": "serde-rs/json",
+    "license": "Apache-2.0",
+    "introducing_pr": 1161,
+    "review_base_sha": "54381d6fee21cb05439937a0f5f286177c21d3f6",
+    "review_head_sha": "859ead8e6d60f4eaed97f7ac2b18f879bec5afe5",
+    "fix_pr": 1173,
+    "fix_sha": "8b314a77bf57ad8d6089536fea1b3c3b303cba92"
+  },
+  "language": [
+    "Rust"
+  ],
+  "files": {
+    "review_diff": "review.diff",
+    "fix_diff": "fix.diff"
+  },
+  "selection": {
+    "nominated_in": "https://github.com/hyperneolabs/review-bench/issues/1",
+    "included_at": "2026-09-24",
+    "criteria_version": "METHODOLOGY.md v0.1 (2026-09-24)"
+  },
+  "defect": {
+    "description": "The SWAR control-character scan in SliceRead::skip_to_escape loads chunks with from_ne_bytes and computes the first matching byte offset with an endianness-conditional leading/trailing_zeros branch, yielding the wrong byte offset on big-endian architectures.",
+    "provenance": "fix PR #1173 (merge 8b314a7, commit 8eba786 'Fix skip_to_escape on BE architectures')",
+    "ground_truth": [
+      {
+        "file": "src/read.rs",
+        "line_start": 456,
+        "line_end": 456,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 456-456, review-head lines 456-456)"
+      },
+      {
+        "file": "src/read.rs",
+        "line_start": 464,
+        "line_end": 468,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 464-468, review-head lines 464-468)"
+      },
+      {
+        "file": "src/read.rs",
+        "line_start": 471,
+        "line_end": 471,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 471-471, review-head lines 471-471)"
+      }
+    ]
+  }
+}

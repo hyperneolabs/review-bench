@@ -1,0 +1,312 @@
+diff --git a/lib/adapters/http.js b/lib/adapters/http.js
+index 063be60..b998115 100755
+--- a/lib/adapters/http.js
++++ b/lib/adapters/http.js
+@@ -23,6 +23,7 @@ import formDataToStream from '../helpers/formDataToStream.js';
+ import readBlob from '../helpers/readBlob.js';
+ import ZlibHeaderTransformStream from '../helpers/ZlibHeaderTransformStream.js';
+ import callbackify from '../helpers/callbackify.js';
++import shouldBypassProxy from '../helpers/shouldBypassProxy.js';
+ import {
+   progressEventReducer,
+   progressEventDecorator,
+@@ -192,7 +193,9 @@ function setProxy(options, configProxy, location) {
+   if (!proxy && proxy !== false) {
+     const proxyUrl = getProxyForUrl(location);
+     if (proxyUrl) {
+-      proxy = new URL(proxyUrl);
++      if (!shouldBypassProxy(location)) {
++        proxy = new URL(proxyUrl);
++      }
+     }
+   }
+   if (proxy) {
+diff --git a/lib/helpers/shouldBypassProxy.js b/lib/helpers/shouldBypassProxy.js
+new file mode 100644
+index 0000000..2460695
+--- /dev/null
++++ b/lib/helpers/shouldBypassProxy.js
+@@ -0,0 +1,106 @@
++const DEFAULT_PORTS = {
++  http: 80,
++  https: 443,
++  ws: 80,
++  wss: 443,
++  ftp: 21,
++};
++
++const parseNoProxyEntry = (entry) => {
++  let entryHost = entry;
++  let entryPort = 0;
++
++  if (entryHost.charAt(0) === '[') {
++    const bracketIndex = entryHost.indexOf(']');
++
++    if (bracketIndex !== -1) {
++      const host = entryHost.slice(1, bracketIndex);
++      const rest = entryHost.slice(bracketIndex + 1);
++
++      if (rest.charAt(0) === ':' && /^\d+$/.test(rest.slice(1))) {
++        entryPort = Number.parseInt(rest.slice(1), 10);
++      }
++
++      return [host, entryPort];
++    }
++  }
++
++  const firstColon = entryHost.indexOf(':');
++  const lastColon = entryHost.lastIndexOf(':');
++
++  if (
++    firstColon !== -1 &&
++    firstColon === lastColon &&
++    /^\d+$/.test(entryHost.slice(lastColon + 1))
++  ) {
++    entryPort = Number.parseInt(entryHost.slice(lastColon + 1), 10);
++    entryHost = entryHost.slice(0, lastColon);
++  }
++
++  return [entryHost, entryPort];
++};
++
++const normalizeNoProxyHost = (hostname) => {
++  if (!hostname) {
++    return hostname;
++  }
++
++  if (hostname.charAt(0) === '[' && hostname.charAt(hostname.length - 1) === ']') {
++    hostname = hostname.slice(1, -1);
++  }
++
++  return hostname.replace(/\.+$/, '');
++};
++
++export default function shouldBypassProxy(location) {
++  let parsed;
++
++  try {
++    parsed = new URL(location);
++  } catch (_err) {
++    return false;
++  }
++
++  const noProxy = (process.env.no_proxy || process.env.NO_PROXY || '').toLowerCase();
++
++  if (!noProxy) {
++    return false;
++  }
++
++  if (noProxy === '*') {
++    return true;
++  }
++
++  const port =
++    Number.parseInt(parsed.port, 10) || DEFAULT_PORTS[parsed.protocol.split(':', 1)[0]] || 0;
++
++  const hostname = normalizeNoProxyHost(parsed.hostname.toLowerCase());
++
++  return noProxy.split(/[\s,]+/).some((entry) => {
++    if (!entry) {
++      return false;
++    }
++
++    let [entryHost, entryPort] = parseNoProxyEntry(entry);
++
++    entryHost = normalizeNoProxyHost(entryHost);
++
++    if (!entryHost) {
++      return false;
++    }
++
++    if (entryPort && entryPort !== port) {
++      return false;
++    }
++
++    if (entryHost.charAt(0) === '*') {
++      entryHost = entryHost.slice(1);
++    }
++
++    if (entryHost.charAt(0) === '.') {
++      return hostname.endsWith(entryHost);
++    }
++
++    return hostname === entryHost;
++  });
++}
+diff --git a/tests/unit/adapters/http.test.js b/tests/unit/adapters/http.test.js
+index c776c88..73fe7af 100644
+--- a/tests/unit/adapters/http.test.js
++++ b/tests/unit/adapters/http.test.js
+@@ -1738,6 +1738,114 @@ describe('supports http with nodejs', () => {
+     }
+   });
+ 
++  it('should not use proxy for localhost with trailing dot when listed in no_proxy', async () => {
++    const originalHttpProxy = process.env.http_proxy;
++    const originalHTTPProxy = process.env.HTTP_PROXY;
++    const originalNoProxy = process.env.no_proxy;
++    const originalNOProxy = process.env.NO_PROXY;
++
++    let proxyRequests = 0;
++    const proxy = await startHTTPServer(
++      (_, response) => {
++        proxyRequests += 1;
++        response.end('proxied');
++      },
++      { port: PROXY_PORT }
++    );
++
++    const noProxyValue = 'localhost,127.0.0.1,::1';
++    const proxyUrl = `http://localhost:${proxy.address().port}/`;
++    process.env.http_proxy = proxyUrl;
++    process.env.HTTP_PROXY = proxyUrl;
++    process.env.no_proxy = noProxyValue;
++    process.env.NO_PROXY = noProxyValue;
++
++    try {
++      await assert.rejects(axios.get('http://localhost.:1/', { timeout: 100 }));
++      assert.equal(proxyRequests, 0, 'should not use proxy for localhost with trailing dot');
++    } finally {
++      await stopHTTPServer(proxy);
++
++      if (originalHttpProxy === undefined) {
++        delete process.env.http_proxy;
++      } else {
++        process.env.http_proxy = originalHttpProxy;
++      }
++
++      if (originalHTTPProxy === undefined) {
++        delete process.env.HTTP_PROXY;
++      } else {
++        process.env.HTTP_PROXY = originalHTTPProxy;
++      }
++
++      if (originalNoProxy === undefined) {
++        delete process.env.no_proxy;
++      } else {
++        process.env.no_proxy = originalNoProxy;
++      }
++
++      if (originalNOProxy === undefined) {
++        delete process.env.NO_PROXY;
++      } else {
++        process.env.NO_PROXY = originalNOProxy;
++      }
++    }
++  });
++
++  it('should not use proxy for bracketed IPv6 loopback when listed in no_proxy', async () => {
++    const originalHttpProxy = process.env.http_proxy;
++    const originalHTTPProxy = process.env.HTTP_PROXY;
++    const originalNoProxy = process.env.no_proxy;
++    const originalNOProxy = process.env.NO_PROXY;
++
++    let proxyRequests = 0;
++    const proxy = await startHTTPServer(
++      (_, response) => {
++        proxyRequests += 1;
++        response.end('proxied');
++      },
++      { port: PROXY_PORT }
++    );
++
++    const noProxyValue = 'localhost,127.0.0.1,::1';
++    const proxyUrl = `http://localhost:${proxy.address().port}/`;
++    process.env.http_proxy = proxyUrl;
++    process.env.HTTP_PROXY = proxyUrl;
++    process.env.no_proxy = noProxyValue;
++    process.env.NO_PROXY = noProxyValue;
++
++    try {
++      await assert.rejects(axios.get('http://[::1]:1/', { timeout: 100 }));
++      assert.equal(proxyRequests, 0, 'should not use proxy for IPv6 loopback');
++    } finally {
++      await stopHTTPServer(proxy);
++
++      if (originalHttpProxy === undefined) {
++        delete process.env.http_proxy;
++      } else {
++        process.env.http_proxy = originalHttpProxy;
++      }
++
++      if (originalHTTPProxy === undefined) {
++        delete process.env.HTTP_PROXY;
++      } else {
++        process.env.HTTP_PROXY = originalHTTPProxy;
++      }
++
++      if (originalNoProxy === undefined) {
++        delete process.env.no_proxy;
++      } else {
++        process.env.no_proxy = originalNoProxy;
++      }
++
++      if (originalNOProxy === undefined) {
++        delete process.env.NO_PROXY;
++      } else {
++        process.env.NO_PROXY = originalNOProxy;
++      }
++    }
++  });
++
+   it('should use proxy for domains not in no_proxy', async () => {
+     const originalHttpProxy = process.env.http_proxy;
+     const originalHTTPProxy = process.env.HTTP_PROXY;
+diff --git a/tests/unit/helpers/shouldBypassProxy.test.js b/tests/unit/helpers/shouldBypassProxy.test.js
+new file mode 100644
+index 0000000..0879cce
+--- /dev/null
++++ b/tests/unit/helpers/shouldBypassProxy.test.js
+@@ -0,0 +1,52 @@
++import { afterEach, describe, expect, it } from 'vitest';
++import shouldBypassProxy from '../../../lib/helpers/shouldBypassProxy.js';
++
++const originalNoProxy = process.env.no_proxy;
++const originalNOProxy = process.env.NO_PROXY;
++
++const setNoProxy = (value) => {
++  process.env.no_proxy = value;
++  process.env.NO_PROXY = value;
++};
++
++afterEach(() => {
++  if (originalNoProxy === undefined) {
++    delete process.env.no_proxy;
++  } else {
++    process.env.no_proxy = originalNoProxy;
++  }
++
++  if (originalNOProxy === undefined) {
++    delete process.env.NO_PROXY;
++  } else {
++    process.env.NO_PROXY = originalNOProxy;
++  }
++});
++
++describe('helpers::shouldBypassProxy', () => {
++  it('should bypass proxy for localhost with a trailing dot', () => {
++    setNoProxy('localhost,127.0.0.1,::1');
++
++    expect(shouldBypassProxy('http://localhost.:8080/')).toBe(true);
++  });
++
++  it('should bypass proxy for bracketed ipv6 loopback', () => {
++    setNoProxy('localhost,127.0.0.1,::1');
++
++    expect(shouldBypassProxy('http://[::1]:8080/')).toBe(true);
++  });
++
++  it('should support bracketed ipv6 entries in no_proxy', () => {
++    setNoProxy('[::1]');
++
++    expect(shouldBypassProxy('http://[::1]:8080/')).toBe(true);
++  });
++
++  it('should match wildcard and explicit ports', () => {
++    setNoProxy('*.example.com,localhost:8080');
++
++    expect(shouldBypassProxy('http://api.example.com/')).toBe(true);
++    expect(shouldBypassProxy('http://localhost:8080/')).toBe(true);
++    expect(shouldBypassProxy('http://localhost:8081/')).toBe(false);
++  });
++});

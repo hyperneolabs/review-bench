@@ -1,0 +1,69 @@
+diff --git a/History.md b/History.md
+index 61a79bcc..9e6ee903 100644
+--- a/History.md
++++ b/History.md
+@@ -1,5 +1,12 @@
+ # Unreleased Changes
+ 
++## 🐞 Bug fixes
++
++- Fixed HTTP header conflict between Content-Length and Transfer-Encoding in res.send - by [@YuryShkoda](https://github.com/YuryShkoda) in [#4893](https://github.com/expressjs/express/pull/4893)
++
++
++    Fixed the behavior of `res.send()` to prevent conflicts between `Content-Length` and `Transfer-Encoding` HTTP headers in responses. The `Content-Length` header in `res.send()` is now only added when a `Transfer-Encoding` header is not present, complying with the HTTP specification that states both headers should not coexist in the same response
++
+ ## 🚀 Improvements
+ 
+ * Improve HTML structure in `res.redirect()` responses when HTML format is accepted by adding `<!DOCTYPE html>`, `<title>`, and `<body>` tags for better browser compatibility - by [@Bernice55231](https://github.com/Bernice55231) in [#5167](https://github.com/expressjs/express/pull/5167)
+diff --git a/lib/response.js b/lib/response.js
+index ebcf5f0d..b4755a5c 100644
+--- a/lib/response.js
++++ b/lib/response.js
+@@ -162,9 +162,10 @@ res.send = function send(body) {
+   var etagFn = app.get('etag fn')
+   var generateETag = !this.get('ETag') && typeof etagFn === 'function'
+ 
+-  // populate Content-Length
+-  var len
+-  if (chunk !== undefined) {
++  // Because Content-Length and Transfer-Encoding can't be present in the response headers together,
++  // Content-Length should be added only if there is no Transfer-Encoding header
++  var len;
++  if (chunk !== undefined && !this.get('Transfer-Encoding')) {
+     if (Buffer.isBuffer(chunk)) {
+       // get length of Buffer
+       len = chunk.length
+diff --git a/test/res.send.js b/test/res.send.js
+index eb6e4961..f38ffde9 100644
+--- a/test/res.send.js
++++ b/test/res.send.js
+@@ -592,4 +592,29 @@ describe('res', function(){
+       })
+     })
+   })
++
++  describe('when Transfer-Encoding header is present', function(){
++    var transferEncodings = [
++      'chunked',
++      'compress',
++      'deflate',
++      'gzip'
++    ];
++
++    transferEncodings.forEach(function(encoding){
++      it('should not add Content-Length header if Transfer-Encoding header is equal to ' + encoding, function(done){
++        var app = express();
++
++        app.use(function(_, res){
++          res.status(200).set('Transfer-Encoding', encoding).send('');
++        });
++
++        request(app)
++          .get('/')
++          .expect(utils.shouldNotHaveHeader('Content-Length'))
++          .expect(utils.shouldHaveHeader('Transfer-Encoding'))
++          .expect(200, '', done);
++      })
++    });
++  })
+ })

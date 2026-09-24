@@ -1,0 +1,24 @@
+{
+  "schema_version": "0.1",
+  "case_id": "express-conditional-revalidation-query",
+  "kind": "control",
+  "corpus_version": "corpus/v0.1",
+  "source": {
+    "repo": "expressjs/express",
+    "license": "MIT",
+    "introducing_pr": 7366,
+    "review_base_sha": "ba006766fb964571723138708eacaba0f55759cd",
+    "review_head_sha": "ae6dd37680e3a00618d6c8a3e522f0ee4eeba1a4"
+  },
+  "language": [
+    "JavaScript"
+  ],
+  "files": {
+    "review_diff": "review.diff"
+  },
+  "selection": {
+    "nominated_in": "https://github.com/hyperneolabs/review-bench/issues/1",
+    "included_at": "2026-09-24",
+    "criteria_version": "METHODOLOGY.md v0.1 (2026-09-24)"
+  }
+}

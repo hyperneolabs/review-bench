@@ -1,0 +1,238 @@
+diff --git a/lib/core/Axios.js b/lib/core/Axios.js
+index 6ac52f1..034e37a 100644
+--- a/lib/core/Axios.js
++++ b/lib/core/Axios.js
+@@ -46,13 +46,29 @@ class Axios {
+         Error.captureStackTrace ? Error.captureStackTrace(dummy) : (dummy = new Error());
+ 
+         // slice off the Error: ... line
+-        const stack = dummy.stack ? dummy.stack.replace(/^.+\n/, '') : '';
++        const stack = (() => {
++          if (!dummy.stack) {
++            return '';
++          }
++
++          const firstNewlineIndex = dummy.stack.indexOf('\n');
++
++          return firstNewlineIndex === -1 ? '' : dummy.stack.slice(firstNewlineIndex + 1);
++        })();
+         try {
+           if (!err.stack) {
+             err.stack = stack;
+             // match without the 2 top stack lines
+-          } else if (stack && !String(err.stack).endsWith(stack.replace(/^.+\n.+\n/, ''))) {
+-            err.stack += '\n' + stack;
++          } else if (stack) {
++            const firstNewlineIndex = stack.indexOf('\n');
++            const secondNewlineIndex =
++              firstNewlineIndex === -1 ? -1 : stack.indexOf('\n', firstNewlineIndex + 1);
++            const stackWithoutTwoTopLines =
++              secondNewlineIndex === -1 ? '' : stack.slice(secondNewlineIndex + 1);
++
++            if (!String(err.stack).endsWith(stackWithoutTwoTopLines)) {
++              err.stack += '\n' + stack;
++            }
+           }
+         } catch (e) {
+           // ignore the case where "stack" is an un-writable property
+diff --git a/lib/core/AxiosHeaders.js b/lib/core/AxiosHeaders.js
+index 38a26a4..08e5ccf 100644
+--- a/lib/core/AxiosHeaders.js
++++ b/lib/core/AxiosHeaders.js
+@@ -5,18 +5,49 @@ import parseHeaders from '../helpers/parseHeaders.js';
+ 
+ const $internals = Symbol('internals');
+ 
++const isValidHeaderValue = (value) => !/[\r\n]/.test(value);
++
++function assertValidHeaderValue(value, header) {
++  if (value === false || value == null) {
++    return;
++  }
++
++  if (utils.isArray(value)) {
++    value.forEach((v) => assertValidHeaderValue(v, header));
++    return;
++  }
++
++  if (!isValidHeaderValue(String(value))) {
++    throw new Error(`Invalid character in header content ["${header}"]`);
++  }
++}
++
+ function normalizeHeader(header) {
+   return header && String(header).trim().toLowerCase();
+ }
+ 
++function stripTrailingCRLF(str) {
++  let end = str.length;
++
++  while (end > 0) {
++    const charCode = str.charCodeAt(end - 1);
++
++    if (charCode !== 10 && charCode !== 13) {
++      break;
++    }
++
++    end -= 1;
++  }
++
++  return end === str.length ? str : str.slice(0, end);
++}
++
+ function normalizeValue(value) {
+   if (value === false || value == null) {
+     return value;
+   }
+ 
+-  return utils.isArray(value)
+-    ? value.map(normalizeValue)
+-    : String(value).replace(/[\r\n]+$/, '');
++  return utils.isArray(value) ? value.map(normalizeValue) : stripTrailingCRLF(String(value));
+ }
+ 
+ function parseTokens(str) {
+@@ -98,6 +129,7 @@ class AxiosHeaders {
+         _rewrite === true ||
+         (_rewrite === undefined && self[key] !== false)
+       ) {
++        assertValidHeaderValue(_value, _header);
+         self[key || _header] = normalizeValue(_value);
+       }
+     }
+diff --git a/tests/browser/adapter.browser.test.js b/tests/browser/adapter.browser.test.js
+index d9df546..3312831 100644
+--- a/tests/browser/adapter.browser.test.js
++++ b/tests/browser/adapter.browser.test.js
+@@ -14,6 +14,7 @@ class MockXMLHttpRequest {
+     this.upload = {
+       addEventListener() {},
+     };
++    this.requestHeaders = {};
+   }
+ 
+   open(method, url, async = true) {
+@@ -22,7 +23,9 @@ class MockXMLHttpRequest {
+     this.async = async;
+   }
+ 
+-  setRequestHeader() {}
++  setRequestHeader(key, value) {
++    this.requestHeaders[key] = value;
++  }
+ 
+   addEventListener() {}
+ 
+@@ -175,4 +178,16 @@ describe('adapter (vitest browser)', () => {
+     request.respondWith();
+     await responsePromise;
+   });
++
++  it('should reject request headers containing CRLF characters', async () => {
++    await expect(
++      axios('/foo', {
++        headers: {
++          'x-test': 'ok\r\nInjected: yes',
++        },
++      })
++    ).rejects.toThrow(/Invalid character in header content/);
++
++    expect(requests.length).toBe(0);
++  });
+ });
+diff --git a/tests/unit/adapters/fetch.test.js b/tests/unit/adapters/fetch.test.js
+index 8b1bc3f..43f2101 100644
+--- a/tests/unit/adapters/fetch.test.js
++++ b/tests/unit/adapters/fetch.test.js
+@@ -26,6 +26,17 @@ const fetchAxios = axios.create({
+ });
+ 
+ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => {
++  it('should reject request headers containing CRLF characters', async () => {
++    await assert.rejects(
++      fetchAxios.get(`${LOCAL_SERVER_URL}/`, {
++        headers: {
++          'x-test': 'ok\r\nInjected: yes',
++        },
++      }),
++      /(invalid.*header|header.*invalid)/i
++    );
++  });
++
+   describe('responses', () => {
+     it('should support text response type', async () => {
+       const originalData = 'my data';
+diff --git a/tests/unit/adapters/http.test.js b/tests/unit/adapters/http.test.js
+index 73fe7af..c35c3ec 100644
+--- a/tests/unit/adapters/http.test.js
++++ b/tests/unit/adapters/http.test.js
+@@ -125,6 +125,17 @@ describe('supports http with nodejs', () => {
+     }
+   });
+ 
++  it('should reject request headers containing CRLF characters', async () => {
++    await assert.rejects(
++      axios.get('http://localhost:1/', {
++        headers: {
++          'x-test': 'ok\r\nInjected: yes',
++        },
++      }),
++      /Invalid character in header content/
++    );
++  });
++
+   it('should parse the timeout property', async () => {
+     const server = await startHTTPServer(
+       (req, res) => {
+diff --git a/tests/unit/axiosHeaders.test.js b/tests/unit/axiosHeaders.test.js
+index a378f4a..60b23b5 100644
+--- a/tests/unit/axiosHeaders.test.js
++++ b/tests/unit/axiosHeaders.test.js
+@@ -85,19 +85,38 @@ describe('AxiosHeaders', () => {
+     });
+ 
+     const runIfNode18OrHigher = nodeMajorVersion >= 18 ? it : it.skip;
+-    runIfNode18OrHigher('should support setting multiple header values from an iterable source', () => {
++    runIfNode18OrHigher(
++      'should support setting multiple header values from an iterable source',
++      () => {
++        const headers = new AxiosHeaders();
++        const nativeHeaders = new Headers();
++
++        nativeHeaders.append('set-cookie', 'foo');
++        nativeHeaders.append('set-cookie', 'bar');
++        nativeHeaders.append('set-cookie', 'baz');
++        nativeHeaders.append('y', 'qux');
++
++        headers.set(nativeHeaders);
++
++        assert.deepStrictEqual(headers.get('set-cookie'), ['foo', 'bar', 'baz']);
++        assert.strictEqual(headers.get('y'), 'qux');
++      }
++    );
++
++    it('should throw on CRLF in header value', () => {
+       const headers = new AxiosHeaders();
+-      const nativeHeaders = new Headers();
+ 
+-      nativeHeaders.append('set-cookie', 'foo');
+-      nativeHeaders.append('set-cookie', 'bar');
+-      nativeHeaders.append('set-cookie', 'baz');
+-      nativeHeaders.append('y', 'qux');
++      assert.throws(() => {
++        headers.set('x-test', 'safe\r\nInjected: true');
++      }, /Invalid character in header content/);
++    });
+ 
+-      headers.set(nativeHeaders);
++    it('should throw on CRLF in any array header value', () => {
++      const headers = new AxiosHeaders();
+ 
+-      assert.deepStrictEqual(headers.get('set-cookie'), ['foo', 'bar', 'baz']);
+-      assert.strictEqual(headers.get('y'), 'qux');
++      assert.throws(() => {
++        headers.set('set-cookie', ['safe=1', 'unsafe=1\nInjected: true']);
++      }, /Invalid character in header content/);
+     });
+   });
+ 

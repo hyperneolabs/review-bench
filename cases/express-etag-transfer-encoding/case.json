@@ -1,0 +1,45 @@
+{
+  "schema_version": "0.1",
+  "case_id": "express-etag-transfer-encoding",
+  "kind": "bug",
+  "corpus_version": "corpus/v0.1",
+  "source": {
+    "repo": "expressjs/express",
+    "license": "MIT",
+    "introducing_pr": 4893,
+    "review_base_sha": "59e205a57a04fced6bb7b8ec0b5dec29461a9996",
+    "review_head_sha": "18e5985b8a9d5e8423db0a9121f22bdaecd5b120",
+    "fix_pr": 7459,
+    "fix_sha": "9a34acf03cb818ff3f8bc40e44176e277a25cbb9"
+  },
+  "language": [
+    "JavaScript"
+  ],
+  "files": {
+    "review_diff": "review.diff",
+    "fix_diff": "fix.diff"
+  },
+  "selection": {
+    "nominated_in": "https://github.com/hyperneolabs/review-bench/issues/1",
+    "included_at": "2026-09-24",
+    "criteria_version": "METHODOLOGY.md v0.1 (2026-09-24)"
+  },
+  "defect": {
+    "description": "Gating the whole length-computation block on !Transfer-Encoding also skips the ETag generation path, so res.send with a pre-set Transfer-Encoding header loses its automatic ETag.",
+    "provenance": "fix PR #7459 body (commit 9a34acf0), which names introducing commit 18e5985b",
+    "ground_truth": [
+      {
+        "file": "lib/response.js",
+        "line_start": 165,
+        "line_end": 166,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 165-166, review-head lines 165-166)"
+      },
+      {
+        "file": "lib/response.js",
+        "line_start": 168,
+        "line_end": 168,
+        "note": "fix hunk attributed to the introducing change (fix-parent lines 168-168, review-head lines 168-168)"
+      }
+    ]
+  }
+}

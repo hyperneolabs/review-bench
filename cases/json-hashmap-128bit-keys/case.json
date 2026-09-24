@@ -1,0 +1,24 @@
+{
+  "schema_version": "0.1",
+  "case_id": "json-hashmap-128bit-keys",
+  "kind": "control",
+  "corpus_version": "corpus/v0.1",
+  "source": {
+    "repo": "serde-rs/json",
+    "license": "Apache-2.0",
+    "introducing_pr": 1188,
+    "review_base_sha": "27a4ca9d7a62394fe8f0103f3d91de59f055a4c4",
+    "review_head_sha": "599228d5dc52a0f1595fe4bd901821f70d0317a5"
+  },
+  "language": [
+    "Rust"
+  ],
+  "files": {
+    "review_diff": "review.diff"
+  },
+  "selection": {
+    "nominated_in": "https://github.com/hyperneolabs/review-bench/issues/1",
+    "included_at": "2026-09-24",
+    "criteria_version": "METHODOLOGY.md v0.1 (2026-09-24)"
+  }
+}

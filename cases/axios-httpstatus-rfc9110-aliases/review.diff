@@ -1,0 +1,167 @@
+diff --git a/PRE_RELEASE_CHANGELOG.md b/PRE_RELEASE_CHANGELOG.md
+index db33929..b057a69 100644
+--- a/PRE_RELEASE_CHANGELOG.md
++++ b/PRE_RELEASE_CHANGELOG.md
+@@ -2,6 +2,10 @@
+ 
+ ## Unreleased
+ 
++## Features
++
++- **HTTP status code names:** Added the RFC 9110 names `HttpStatusCode.ContentTooLarge` for 413 and `HttpStatusCode.UnprocessableContent` for 422 across the runtime API and ESM/CommonJS declarations. The existing `PayloadTooLarge` and `UnprocessableEntity` names remain as deprecated aliases, and numeric reverse lookups retain their existing v1.x names for compatibility. (**#11082**, closes **#11066**)
++
+ ## Bug Fixes
+ 
+ - **XHR Adapter - navigation-canceled requests:** A response that reaches `loadend` with status 0 is now rejected as an `ECONNABORTED` error instead of resolving as a success with an empty body. Firefox 152 stopped firing `error` and `abort` for requests canceled by a document navigation, leaving `loadend` as the only handler that runs, so those requests were settling as successful responses. Rejecting with `ECONNABORTED` matches what `onabort` raised on Firefox 151, so the outcome an application sees is unchanged by that update. Reads over `file:`, which some environments report as status 0 on success, still resolve, whether the scheme appears on the request URL, is inherited from a `file:` page origin by a relative request URL, or appears only on `responseURL`. Because no response was received, the rejection is not suppressed by `validateStatus`, matching how `onerror` and `onabort` already behave. (**#11094**, closes **#11093**)
+diff --git a/PRE_RELEASE_DOCS.md b/PRE_RELEASE_DOCS.md
+index edcd131..f9b7b40 100644
+--- a/PRE_RELEASE_DOCS.md
++++ b/PRE_RELEASE_DOCS.md
+@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
+ 
+ ## Unreleased
+ 
++### RFC 9110 HTTP status code names
++
++- **Change:** Document the additive RFC 9110 names for HTTP statuses 413 and 422.
++- **Source:** `PRE_RELEASE_CHANGELOG.md` Features, #11082, closes #11066.
++- **Status:** Pending.
++- **Docs targets:** `README.md` and `docs/pages/advanced/api-reference.md` `HttpStatusCode` guidance; migration or upgrade notes; translated docs after the English documentation is finalized.
++- **Required content:** Introduce `HttpStatusCode.ContentTooLarge` for 413 and `HttpStatusCode.UnprocessableContent` for 422 as the preferred RFC 9110 names. Explain that `PayloadTooLarge` and `UnprocessableEntity` remain available as deprecated aliases throughout v1.x, and that numeric reverse lookups continue returning those legacy names for backward compatibility.
++- **Examples:** Show forward comparisons using `HttpStatusCode.ContentTooLarge` and `HttpStatusCode.UnprocessableContent`.
++- **Notes:** Removing the deprecated aliases or changing the numeric reverse-lookup strings is reserved for a future major release. Keep ESM and CommonJS examples aligned and update translated documentation after the English wording is finalized.
++
+ ### Typed request params
+ 
+ - **Change:** Document the additive request-params generic across axios's public TypeScript declarations.
+diff --git a/index.d.cts b/index.d.cts
+index 62a028c..a1045bc 100644
+--- a/index.d.cts
++++ b/index.d.cts
+@@ -288,14 +288,18 @@ declare enum HttpStatusCode {
+   Gone = 410,
+   LengthRequired = 411,
+   PreconditionFailed = 412,
++  /** @deprecated Use `ContentTooLarge` instead. */
+   PayloadTooLarge = 413,
++  ContentTooLarge = 413,
+   UriTooLong = 414,
+   UnsupportedMediaType = 415,
+   RangeNotSatisfiable = 416,
+   ExpectationFailed = 417,
+   ImATeapot = 418,
+   MisdirectedRequest = 421,
++  /** @deprecated Use `UnprocessableContent` instead. */
+   UnprocessableEntity = 422,
++  UnprocessableContent = 422,
+   Locked = 423,
+   FailedDependency = 424,
+   TooEarly = 425,
+diff --git a/index.d.ts b/index.d.ts
+index 6339f6d..f26f447 100644
+--- a/index.d.ts
++++ b/index.d.ts
+@@ -214,14 +214,18 @@ export enum HttpStatusCode {
+   Gone = 410,
+   LengthRequired = 411,
+   PreconditionFailed = 412,
++  /** @deprecated Use `ContentTooLarge` instead. */
+   PayloadTooLarge = 413,
++  ContentTooLarge = 413,
+   UriTooLong = 414,
+   UnsupportedMediaType = 415,
+   RangeNotSatisfiable = 416,
+   ExpectationFailed = 417,
+   ImATeapot = 418,
+   MisdirectedRequest = 421,
++  /** @deprecated Use `UnprocessableContent` instead. */
+   UnprocessableEntity = 422,
++  UnprocessableContent = 422,
+   Locked = 423,
+   FailedDependency = 424,
+   TooEarly = 425,
+diff --git a/lib/helpers/HttpStatusCode.js b/lib/helpers/HttpStatusCode.js
+index 0181d93..f8f1387 100644
+--- a/lib/helpers/HttpStatusCode.js
++++ b/lib/helpers/HttpStatusCode.js
+@@ -35,14 +35,22 @@ const HttpStatusCode = {
+   Gone: 410,
+   LengthRequired: 411,
+   PreconditionFailed: 412,
++  /**
++   * @deprecated Use `ContentTooLarge` instead.
++   */
+   PayloadTooLarge: 413,
++  ContentTooLarge: 413,
+   UriTooLong: 414,
+   UnsupportedMediaType: 415,
+   RangeNotSatisfiable: 416,
+   ExpectationFailed: 417,
+   ImATeapot: 418,
+   MisdirectedRequest: 421,
++  /**
++   * @deprecated Use `UnprocessableContent` instead.
++   */
+   UnprocessableEntity: 422,
++  UnprocessableContent: 422,
+   Locked: 423,
+   FailedDependency: 424,
+   TooEarly: 425,
+@@ -72,7 +80,9 @@ const HttpStatusCode = {
+ };
+ 
+ Object.entries(HttpStatusCode).forEach(([key, value]) => {
+-  HttpStatusCode[value] = key;
++  if (HttpStatusCode[value] === undefined) {
++    HttpStatusCode[value] = key;
++  }
+ });
+ 
+ export default HttpStatusCode;
+diff --git a/tests/module/cjs/tests/helpers/cjs-added-types.ts b/tests/module/cjs/tests/helpers/cjs-added-types.ts
+index 2515065..47e2696 100644
+--- a/tests/module/cjs/tests/helpers/cjs-added-types.ts
++++ b/tests/module/cjs/tests/helpers/cjs-added-types.ts
+@@ -32,6 +32,8 @@ const cancelFromAlias = new cancelCtor('from alias');
+ 
+ const status = axios.HttpStatusCode.WebServerIsDown;
+ const unknownErrorStatus = axios.HttpStatusCode.WebServerReturnsAnUnknownError;
++const contentTooLargeStatus = axios.HttpStatusCode.ContentTooLarge;
++const unprocessableContentStatus = axios.HttpStatusCode.UnprocessableContent;
+ 
+ class CustomBlob {
+   constructor(_parts?: any[]) {}
+diff --git a/tests/module/esm/tests/helpers/esm-added-types.ts b/tests/module/esm/tests/helpers/esm-added-types.ts
+index 45268b1..ed73e83 100644
+--- a/tests/module/esm/tests/helpers/esm-added-types.ts
++++ b/tests/module/esm/tests/helpers/esm-added-types.ts
+@@ -48,6 +48,8 @@ const cancelFromAlias = new cancelCtor('from alias');
+ 
+ const status: HttpStatusCode = HttpStatusCode.WebServerIsDown;
+ const unknownErrorStatus: HttpStatusCode = HttpStatusCode.WebServerReturnsAnUnknownError;
++const contentTooLargeStatus: HttpStatusCode = HttpStatusCode.ContentTooLarge;
++const unprocessableContentStatus: HttpStatusCode = HttpStatusCode.UnprocessableContent;
+ 
+ class CustomBlob {
+   constructor(_parts?: any[]) {}
+diff --git a/tests/unit/helpers/HttpStatusCode.test.js b/tests/unit/helpers/HttpStatusCode.test.js
+index 5899d48..f6f8c2f 100644
+--- a/tests/unit/helpers/HttpStatusCode.test.js
++++ b/tests/unit/helpers/HttpStatusCode.test.js
+@@ -2,6 +2,16 @@ import { describe, it, expect } from 'vitest';
+ import HttpStatusCode from '../../../lib/helpers/HttpStatusCode.js';
+ 
+ describe('helpers::HttpStatusCode', () => {
++  it('should expose RFC 9110 status aliases while preserving legacy reverse lookups', () => {
++    expect(HttpStatusCode.ContentTooLarge).toBe(413);
++    expect(HttpStatusCode.PayloadTooLarge).toBe(413);
++    expect(HttpStatusCode[413]).toBe('PayloadTooLarge');
++
++    expect(HttpStatusCode.UnprocessableContent).toBe(422);
++    expect(HttpStatusCode.UnprocessableEntity).toBe(422);
++    expect(HttpStatusCode[422]).toBe('UnprocessableEntity');
++  });
++
+   it('should expose Cloudflare status 520 in both directions', () => {
+     expect(HttpStatusCode.WebServerReturnsAnUnknownError).toBe(520);
+     expect(HttpStatusCode[520]).toBe('WebServerReturnsAnUnknownError');
