@@ -3,12 +3,13 @@
   "corpus_version": "corpus/v0.1",
   "frozen_at": "2026-09-25",
   "sampling_rule": "cases/sampling-v0.1.md",
+  "sampling_sha256": "79e2f8f70b7759326dd5675563fa6e1f2eadab2a3e5bcedab5538081ce030207",
   "methodology_version": "METHODOLOGY.md v0.1 (2026-09-24)",
   "case_counts": {
     "bug": 17,
     "control": 10
   },
-  "digest_recipe": "per file: sha256 of the file bytes; per case: sha256 of the UTF-8 concatenation of '<file-sha256>  <relative-path>' lines over every regular file in the case directory (path relative to the case directory, POSIX separators), sorted by path, each line followed by one newline",
+  "digest_recipe": "per file: sha256 of the file bytes; per case: sha256 of the UTF-8 concatenation of '<file-sha256>  <relative-path>' lines over every regular file in the case directory, recursively including subdirectories (symlinks are rejected), paths in POSIX form relative to the case directory, entries sorted bytewise by path (C-locale codepoint order), each line followed by one newline",
   "cases": [
     {
       "case_id": "axios-httpstatus-rfc9110-aliases",

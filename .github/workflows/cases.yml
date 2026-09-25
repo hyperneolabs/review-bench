@@ -9,8 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # full history + tags: the freeze check reads corpus/* tags
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - run: pip install jsonschema
       - run: python tools/validate_cases.py
+      - run: python tools/check_frozen_tags.py

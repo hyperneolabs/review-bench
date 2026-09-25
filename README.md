@@ -51,8 +51,10 @@ at the tag `corpus/v0.1` with its manifest
 control cases across axios, express, httpx, and serde_json (batch 1) and
 chi, grpc-go, cobra, urfave/cli, and testify (batch 2, the Go pass) — real
 merged upstream PRs with pinned SHAs, mined under the written sampling rule.
-The manifest binds every case file by SHA-256 digest, and CI fails on any
-edit to a frozen case — corrections require a new corpus version
+The manifest binds every case file by SHA-256 digest, and CI checks the
+tree against every frozen corpus tag — editing a frozen case, growing a
+frozen version, or regenerating or deleting its manifest all fail
+validation. Corrections require a new corpus version
 ([METHODOLOGY.md §2.3](METHODOLOGY.md#23-versioning-and-freezing)). Until a
 `results/` entry exists for a corpus version, nothing here ranks anything.
 This section will be updated — never quietly deleted — as drops land.
@@ -73,7 +75,7 @@ METHODOLOGY.md   benchmark protocol (corpus, arms, grading, disclosures)
 schema/          JSON schemas: case manifests, arm run records, report envelopes
 cases/           the corpus, one directory per case (v0.1 frozen: sampling rule + manifest + 27 cases)
 results/         per-arm outputs and aggregate tables (empty until first drop)
-tools/           case validation + corpus build/freeze scripts
+tools/           case validation + corpus freeze tooling (incl. tag-anchored checks)
 CHANGELOG.md     versioned changes to methodology, corpus, and results
 ```
 

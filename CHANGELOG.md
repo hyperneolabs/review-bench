@@ -17,14 +17,27 @@ methodology §2.3.
 
 - `tools/freeze_corpus.py`: deterministic manifest generator (cases sorted
   by id, files sorted by path, fixed rendering — re-running with the same
-  date reproduces byte-identical output), with a `--check` mode.
+  date reproduces byte-identical output), with a `--check` mode. Refuses to
+  overwrite an existing manifest without `--force` (regenerating a frozen
+  manifest is never the fix — a new corpus version is); rejects symlinks
+  inside case directories; records the sampling rule's SHA-256 alongside
+  its path; writes LF-only and pins the digest recipe wording (recursive,
+  bytewise path sort).
 - `tools/validate_cases.py`: frozen-manifest enforcement — every committed
   `cases/corpus-*.json` is regenerated from the case tree and
   byte-compared, so editing a frozen case, adding a case to a frozen
   version, or hand-editing the manifest fails CI. Cases declaring an
   unfrozen later version (mining in progress) do not fail. New per-case
   `corpus_version` shape check (`corpus/vX.Y`) so a mistyped version cannot
-  silently fall outside every manifest.
+  silently fall outside every manifest. Malformed manifests and unreadable
+  case data fail with a message, not a traceback.
+- `tools/check_frozen_tags.py` + CI (checkout with `fetch-depth: 0`): the
+  tag-anchored check the manifest binding needs — for every `corpus/vX.Y`
+  tag, the manifest must still exist in the tree, the frozen version's case
+  set must be unchanged, every per-file digest must match the tagged
+  manifest, and the sampling rule must be byte-identical to the tagged
+  copy. This closes the two ways the filesystem check alone could be
+  disarmed: deleting the manifest, or regenerating it over edited cases.
 - README and `cases/README.md` status sections updated to the frozen state.
 
 ## 0.3.0 — 2026-09-24

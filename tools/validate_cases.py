@@ -46,17 +46,32 @@ def check_frozen_manifests():
         return failures
     for mpath in manifests:
         base = os.path.basename(mpath)
-        disk = open(mpath, encoding="utf-8").read()
-        meta = json.loads(disk)
-        version = meta["corpus_version"]
+        try:
+            disk = open(mpath, "rb").read().decode("utf-8")
+            meta = json.loads(disk)
+            version = meta["corpus_version"]
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError,
+                KeyError, TypeError) as e:
+            print(f"FAIL {base}: unreadable or malformed manifest ({e!r})")
+            failures += 1
+            continue
         expected = "corpus-%s.json" % version[len("corpus/"):]
         if expected != base:
             print(f"FAIL {base}: declares corpus_version {version!r} "
                   f"(filename should be {expected})")
             failures += 1
             continue
-        regen = freeze_corpus.render_manifest(
-            freeze_corpus.build_manifest(version, meta["frozen_at"]))
+        try:
+            regen = freeze_corpus.render_manifest(
+                freeze_corpus.build_manifest(version, meta["frozen_at"]))
+        except SystemExit as e:  # freeze tool refuses (mixed methods, etc.)
+            print(f"FAIL {base}: {e}")
+            failures += 1
+            continue
+        except Exception as e:  # unreadable case data during regeneration
+            print(f"FAIL {base}: cannot regenerate from the case tree ({e!r})")
+            failures += 1
+            continue
         if disk != regen:
             print(f"FAIL {base}: does not match the case tree — a frozen case "
                   "was edited, a case was added to a frozen version, or the "
