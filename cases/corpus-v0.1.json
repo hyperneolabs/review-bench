@@ -1,0 +1,443 @@
+{
+  "schema_version": "0.1",
+  "corpus_version": "corpus/v0.1",
+  "frozen_at": "2026-09-25",
+  "sampling_rule": "cases/sampling-v0.1.md",
+  "methodology_version": "METHODOLOGY.md v0.1 (2026-09-24)",
+  "case_counts": {
+    "bug": 17,
+    "control": 10
+  },
+  "digest_recipe": "per file: sha256 of the file bytes; per case: sha256 of the UTF-8 concatenation of '<file-sha256>  <relative-path>' lines over every regular file in the case directory (path relative to the case directory, POSIX separators), sorted by path, each line followed by one newline",
+  "cases": [
+    {
+      "case_id": "axios-httpstatus-rfc9110-aliases",
+      "kind": "control",
+      "repo": "axios/axios",
+      "license": "MIT",
+      "introducing_pr": 11082,
+      "review_base_sha": "1ac4aeb77ac1b33b29c885aa1bea93d5a05e7bfd",
+      "review_head_sha": "39955a6ebed53217a524a3c8c7e5568fc0faa4bd",
+      "files": {
+        "case.json": "ac48d7ed1658a8b3b236cbe3e520630c0c1df71ffa886c8154cd297aea45f79e",
+        "review.diff": "b8b1f9904d596afa0fef7a90513fdbe60a295946b890c4805497c3e524cdefcc"
+      },
+      "case_digest": "3bbb3e634f507a30f7cd016f2192e44f58ff13029578d3ec048fb7568f3219fd"
+    },
+    {
+      "case_id": "axios-nonstring-error-stack",
+      "kind": "bug",
+      "repo": "axios/axios",
+      "license": "MIT",
+      "introducing_pr": 10660,
+      "review_base_sha": "fb3befb6daac6cad26b2e54094d0f2d9e47f24df",
+      "review_head_sha": "363185461b90b1b78845dc8a99a1f103d9b122a1",
+      "fix_pr": 11109,
+      "fix_sha": "a75bf44647e5132e39b778730394b0a2b983265c",
+      "files": {
+        "case.json": "052614907fb723b47e2ff7ea04e5df32f04e674267b9812ef9aae0ac2095047a",
+        "fix.diff": "5a0f84dba78a984a32875e8dd8d31ca08a04b3953050293601010491c064402a",
+        "review.diff": "cb7578197f29c9107d88f49aa4f40a7a9b313268d188a1ba07abd81068b9ed75"
+      },
+      "case_digest": "1ce287b27f0f4997f7a6f0a73504934754a628dba4f2d251483d841d084f3df7"
+    },
+    {
+      "case_id": "axios-noproxy-wildcard-entry",
+      "kind": "bug",
+      "repo": "axios/axios",
+      "license": "MIT",
+      "introducing_pr": 10661,
+      "review_base_sha": "8023035109c9de959ca47a64658dd97258d5eca7",
+      "review_head_sha": "fb3befb6daac6cad26b2e54094d0f2d9e47f24df",
+      "fix_pr": 11053,
+      "fix_sha": "ff60b43277c32a5b2f7589c917db16d8e043c0d4",
+      "files": {
+        "case.json": "d36cc447e1ca4b1a68be1d7aac335e8569657cc7a4650235a002bd0c5f9e20c9",
+        "fix.diff": "cc0c835af32a2de6cc8650f0ab496e620235c69a1f929c5cb5464dfa621c840f",
+        "review.diff": "100b65453e8edbe114702374aba9e359062a855b0a5de9562f5b508cb04f93c1"
+      },
+      "case_digest": "5ae5d5f22b038d0fb119eb3cd38a34c48c02ced7d89f3cddfe177b898548a428"
+    },
+    {
+      "case_id": "axios-nullish-interceptor-handlers",
+      "kind": "bug",
+      "repo": "axios/axios",
+      "license": "MIT",
+      "introducing_pr": 11087,
+      "review_base_sha": "609dacd8cce089adc7720e11cd62405adf3b6867",
+      "review_head_sha": "712e02373f1c5ac72fdf5da16f04838338ba817e",
+      "fix_pr": 11118,
+      "fix_sha": "2d2a21af8a433089474a2149781799c93acbcf3c",
+      "files": {
+        "case.json": "d293421847acb39a653e8b51b14c9d695ee8436ea5577255b91be8fe244e09c8",
+        "fix.diff": "51978f81562fcdcf9f3922460e37691ecb834d95a855f6125501568e646d75ec",
+        "review.diff": "1e3405f85e345c9eafbff3d67ac8fde226f5df3584d9d1b43f863181215e37aa"
+      },
+      "case_digest": "fd3c3268c22d09196c3b42c0c36223c6e5dcb958b9a55add2ecf353aedb2b36f"
+    },
+    {
+      "case_id": "axios-socket-listener-request-leak",
+      "kind": "bug",
+      "repo": "axios/axios",
+      "license": "MIT",
+      "introducing_pr": 10788,
+      "review_base_sha": "be3336014e01f9a4fc1f8aef15303cf7daaf58db",
+      "review_head_sha": "4709a48fa2717ba97f43f5432d48ca4e26c2d326",
+      "fix_pr": 11091,
+      "fix_sha": "e8147e6ae25a74793e48b4e00e2f98bc303f5b29",
+      "files": {
+        "case.json": "0dff0849fd17539624d45fe2fabc90bf709874eb73e005bb2d235bc4cb4b24f4",
+        "fix.diff": "922290b9c60b43a89a9e2e2820d13e28810881f2c7abf1a031785f19e3b5402d",
+        "review.diff": "ba3c4f54d152fc1b801c614455838cba95e92f8d71a28ec17ad7394a728a4aa6"
+      },
+      "case_digest": "83e5d149564742d7767405191d5ab9583aff1f01240c08170ed44b2a89246bda"
+    },
+    {
+      "case_id": "axios-typed-params-property",
+      "kind": "control",
+      "repo": "axios/axios",
+      "license": "MIT",
+      "introducing_pr": 11081,
+      "review_base_sha": "b72d3ef190b599bf95e89bf79c46311e8ff7e1b0",
+      "review_head_sha": "3077e62097726d22ba30f1cb847d7a07050e339a",
+      "files": {
+        "case.json": "9529adc626256812c8f58f9935583880a6b884f933279da7adfd4bb8078436cd",
+        "review.diff": "30c85a31ae645b71be44c0997a2a983f88218a6950db80925bd5807cb07f602c"
+      },
+      "case_digest": "d58aff02f57b2a674ee4d9b19e9ee981b6f7fa1ef62f137dd4cc502bbdccdc9d"
+    },
+    {
+      "case_id": "chi-recoverer-negative-index",
+      "kind": "bug",
+      "repo": "go-chi/chi",
+      "license": "MIT",
+      "introducing_pr": 496,
+      "review_base_sha": "1077ab2d6c86614c1411d08a985e9bdc5e9c6c4e",
+      "review_head_sha": "98de1d836ac74406c388378b7ff29f03d185f56d",
+      "fix_pr": 633,
+      "fix_sha": "188a1675b7071f85360770e66daab3a51a977eeb",
+      "files": {
+        "case.json": "97c033155dd899dec44842a41293ff539d89db1238174277220dab4b2cf7f3fc",
+        "fix.diff": "58aa516feda90c144c21a50ac7239ed294ada778c2e830bdbef91738bf7314ca",
+        "review.diff": "fd0d193cf1ba7b90c764a47c02496835ce1c424f6487c8a6fd2deac71bac19d1"
+      },
+      "case_digest": "374ea105aa6dae07a7180826f63b234b6096f113e63c0be9ef321e680dca957d"
+    },
+    {
+      "case_id": "chi-replaceall-refactor",
+      "kind": "control",
+      "repo": "go-chi/chi",
+      "license": "MIT",
+      "introducing_pr": 1046,
+      "review_base_sha": "05f1ef7bb50b8a8cb33a9dd3ba1c5b94bff0f723",
+      "review_head_sha": "142fada90f83e2f41f29552110d342de09f96781",
+      "files": {
+        "case.json": "4f8d6589fda488c354bf8ff715c77aba55a13c3a99aa064de69fe7132ae7a972",
+        "review.diff": "bfeee6a4ac50462de77c4bddf5805fe9bd6d283bda97e87ac14313ce7e7e2948"
+      },
+      "case_digest": "5df7a7d5281eb1b5b8b4e4ae4ddeec9fb776542757af7f2784a0139d4945a403"
+    },
+    {
+      "case_id": "chi-routeheaders-missing-return",
+      "kind": "bug",
+      "repo": "go-chi/chi",
+      "license": "MIT",
+      "introducing_pr": 503,
+      "review_base_sha": "a9fe6cac9e2a5c2b2731518145676d61aa7ca894",
+      "review_head_sha": "23b8ec2ca33dd73349ab54f7717d58e9d82c6abc",
+      "fix_pr": 1045,
+      "fix_sha": "05f1ef7bb50b8a8cb33a9dd3ba1c5b94bff0f723",
+      "files": {
+        "case.json": "6595aac5314975fb6c1811ef4b66f87c02959204200f8b9937d92c2ec3ac65dd",
+        "fix.diff": "35ca66c5e7ab31ed698edf1f6534e6997f89d5bce7e01be563adcd8a8f8bfabb",
+        "review.diff": "e6bc9b966824a2f64a92c86b4a2b6d7220c2cc6724c5830cb3d665014768a766"
+      },
+      "case_digest": "ce69804467dde4caba7f1fbfba3800d59dfe794c70fd137845bc9158d3467d06"
+    },
+    {
+      "case_id": "cli-dynamic-fish-completion",
+      "kind": "control",
+      "repo": "urfave/cli",
+      "license": "MIT",
+      "introducing_pr": 2270,
+      "review_base_sha": "7f5c79799fafb227624d47c460ff9f2e0ced904e",
+      "review_head_sha": "600026fe69d2c2354a7a162d10ae43b271911a7f",
+      "files": {
+        "case.json": "ad127cebe71bdd8f5374bc1325bc4faa87d8aad6dfcbfe4fe52338b29935fa00",
+        "review.diff": "2171a52124d671e06c0b1183c1c29fdc9a13984a24b7147c01056a5a6351539b"
+      },
+      "case_digest": "a3cf2be9adfa96f8d975a35b7174e04fb2353b283e96ddbc9c7dafc146bcc229"
+    },
+    {
+      "case_id": "cli-exit-empty-stderr-line",
+      "kind": "bug",
+      "repo": "urfave/cli",
+      "license": "MIT",
+      "introducing_pr": 2237,
+      "review_base_sha": "f0b939963f443f91bbbed3d9ff14513a0ceeb86d",
+      "review_head_sha": "91ed11d72b02788b1125198e9b2296e0a39bc8df",
+      "fix_pr": 2310,
+      "fix_sha": "6ce476e539dd29b69d4c57ae83f9af1ddaffc611",
+      "files": {
+        "case.json": "84e8e0adcb4189dca78e8fcce6782a85e0c5de4b633ae1006e3d1e01e2fb3eeb",
+        "fix.diff": "a759c4f27005ed49c4647855f4f823045be33f025cf0d550a5257accea8d36e4",
+        "review.diff": "c299c03aec81ca0a8fc13f76c42abad22f4c6fdedaf48a1b3227ca6787b695c9"
+      },
+      "case_digest": "f2638555b46036a9322760b2fd291d484d9e60ccee0c413e8c2586b637ca4de4"
+    },
+    {
+      "case_id": "cobra-argsminusfirstx-flag-value",
+      "kind": "bug",
+      "repo": "spf13/cobra",
+      "license": "Apache-2.0",
+      "introducing_pr": 95,
+      "review_base_sha": "3c187e904540cd62f0a197cddd6da02645a7cc5a",
+      "review_head_sha": "36aee64abe8c011e55572b30f0152fd143a32515",
+      "fix_pr": 1781,
+      "fix_sha": "6b0bd3076cfafd1c108264ed1e4aa0c0fe3f8537",
+      "files": {
+        "case.json": "66ceefeafcdc03f65a77ff1b6b597a748ac568f8e0a0f5710ed97cbba3f6ed40",
+        "fix.diff": "b9c47d984d10c868d96987710e71cbbcb870351696547fb7b0cdc84c0be016c8",
+        "review.diff": "c5db0d7aefe0ec402e2c4a8889c7bd20f57b619bd4ddd1b7cc96fed4fb5c623c"
+      },
+      "case_digest": "99816589c2e0decf5f1a742e549b8911c4af874c6ea2f048f353fd43e04785ef"
+    },
+    {
+      "case_id": "cobra-initdefaultcompletioncmd-public",
+      "kind": "control",
+      "repo": "spf13/cobra",
+      "license": "Apache-2.0",
+      "introducing_pr": 1467,
+      "review_base_sha": "2169adb5749372c64cdd303864ae8a444da6350f",
+      "review_head_sha": "860791844ed3a2e544a9b9bbbcb14144a948ad20",
+      "files": {
+        "case.json": "0d06e786f603eb8b168d533d24e3cbeb1b0f19d9453c4c8d375fa40315368e8d",
+        "review.diff": "d4aa423ec4ec16be69182c7fb8e1f633db3a4b452a0d90bf39ae96c9412aad66"
+      },
+      "case_digest": "a750e8377f7ffa9f5498d74e9d40132e81c55185c932dc8918bff28c538d6300"
+    },
+    {
+      "case_id": "cobra-shadowed-persistent-flag-help",
+      "kind": "bug",
+      "repo": "spf13/cobra",
+      "license": "Apache-2.0",
+      "introducing_pr": 414,
+      "review_base_sha": "a3cd8ab85aeba3522b9b59242f3b86ddbc67f8bd",
+      "review_head_sha": "f58a8d6bd383c1594da70068e4c236136adc5496",
+      "fix_pr": 1776,
+      "fix_sha": "22b617914c8890ba20db7ceafcdc2ef4ca4817d3",
+      "files": {
+        "case.json": "46bc90bd9799e90936127b49def079118ef72a8a4178c154e62e15e71a4ec763",
+        "fix.diff": "384515931eaba6f1b83cb7d3284003e89a6a6df80de4c0056eae2df3e2658ae4",
+        "review.diff": "e3c3bd2d7ce146d4cd9a43d9f5b91fbafdff814966ecdaae427420636cbcb1ce"
+      },
+      "case_digest": "394df1f4add24892af7295d93ec8a680d06ecd2046c1471d96d58819561098cf"
+    },
+    {
+      "case_id": "express-conditional-revalidation-query",
+      "kind": "control",
+      "repo": "expressjs/express",
+      "license": "MIT",
+      "introducing_pr": 7366,
+      "review_base_sha": "ba006766fb964571723138708eacaba0f55759cd",
+      "review_head_sha": "ae6dd37680e3a00618d6c8a3e522f0ee4eeba1a4",
+      "files": {
+        "case.json": "b6ba3b33d5080dc56bfed074745e51217e728e276cf5d3024342dba3162d7bbd",
+        "review.diff": "03c54f101ec3d0b53a82a844da0b48b4147c60d9f3812de7ee9bc9679aa83890"
+      },
+      "case_digest": "eca926955a92830ccbb164d7441e28c4063b5b33c28271d45e6896a811cb83cf"
+    },
+    {
+      "case_id": "express-etag-transfer-encoding",
+      "kind": "bug",
+      "repo": "expressjs/express",
+      "license": "MIT",
+      "introducing_pr": 4893,
+      "review_base_sha": "59e205a57a04fced6bb7b8ec0b5dec29461a9996",
+      "review_head_sha": "18e5985b8a9d5e8423db0a9121f22bdaecd5b120",
+      "fix_pr": 7459,
+      "fix_sha": "9a34acf03cb818ff3f8bc40e44176e277a25cbb9",
+      "files": {
+        "case.json": "cbdc4c54c03d96d1f79b346e649f0b172afa4b04cb3550323186d1dcfd2181ca",
+        "fix.diff": "b9057d951db76cc337eb5035a174957163e59b44ead7d9540ef7ee8ab084e8dc",
+        "review.diff": "22c048a89d5d4fcb3000293708d31a0583bb71f2c01ebc3ac00bd2ec468c18fc"
+      },
+      "case_digest": "dcfac71f86ea455881fd27724a0f0b2d82993920385be6b449fef271a71767fe"
+    },
+    {
+      "case_id": "grpc-codes-unmarshaljson",
+      "kind": "control",
+      "repo": "grpc/grpc-go",
+      "license": "Apache-2.0",
+      "introducing_pr": 1720,
+      "review_base_sha": "ec61302c8eeed1f9705bc51e6606220ce21f4a60",
+      "review_head_sha": "2941ee12eb653ae6965af2c79213b60a2e875008",
+      "files": {
+        "case.json": "bbb9c0cc84e25bcff2eade181cb906f9cfbe1acea50f25c1c0dea6a08908fe49",
+        "review.diff": "1260b9126770610782d8d376f9ec378dcac5e6c0258415253391d0ad1c3ea871"
+      },
+      "case_digest": "f2171b25d5987c438882237629d9f395ecd396bf79f936043c3a0e340b3ea07d"
+    },
+    {
+      "case_id": "grpc-dialcontext-goroutine-leak",
+      "kind": "bug",
+      "repo": "grpc/grpc-go",
+      "license": "Apache-2.0",
+      "introducing_pr": 1112,
+      "review_base_sha": "cdee119ee21e61eef7093a41ba148fa83585e143",
+      "review_head_sha": "c5a5dbc5005d9153f67df476a7b561c07b22dbc2",
+      "fix_pr": 1424,
+      "fix_sha": "4e56696c6c5a8cd7b711a1eb8936463559361da5",
+      "files": {
+        "case.json": "41cd5a2523bcfd620a10d31611fa53e58b43180aea2bc7ddf0d698d1ae170283",
+        "fix.diff": "462046caac77a285a0e3aa55d71817c7838403b489f461218842bf99cd42a779",
+        "review.diff": "55f3f499948e71f1ae62665bc51b7bd16b354902755db020ec824a2a22b90bba"
+      },
+      "case_digest": "0fb500228139c5e06dfe45098df0476085eb836c600c4bab1701f4cbd12ae4d8"
+    },
+    {
+      "case_id": "grpc-fromproto-nil-receiver",
+      "kind": "bug",
+      "repo": "grpc/grpc-go",
+      "license": "Apache-2.0",
+      "introducing_pr": 1171,
+      "review_base_sha": "b5071124392bfd416c713e6595ac149b387f7186",
+      "review_head_sha": "1d27587e10ceeec14017f9ebb5bf9ad3625cf58c",
+      "fix_pr": 1211,
+      "fix_sha": "84cd50a2f394888f98188c49558f7806cde76725",
+      "files": {
+        "case.json": "ac4732b14a88c92c424c14486ac0a2e6ee43ddded147a6444e7316008ec21e6a",
+        "fix.diff": "0364dd27d94229b70b3562ac9aa3e12741544a9f9a4edc9f41fb4516c8c52c78",
+        "review.diff": "1deccc1e2627e00b91c526139cde305a4115aa8bbd3db3d29e5428066ac0718f"
+      },
+      "case_digest": "b47f1a9aaba2856d56832cfa5d58529be90e0b2e6e8310d66ed788fd01f27d48"
+    },
+    {
+      "case_id": "grpc-parsetarget-unix-scheme",
+      "kind": "bug",
+      "repo": "grpc/grpc-go",
+      "license": "Apache-2.0",
+      "introducing_pr": 1567,
+      "review_base_sha": "06233310cc312165d1a5e8c1a7bb4cb51c7f402b",
+      "review_head_sha": "3f10311ccf076b6b7cba28273df3290d42e60982",
+      "fix_pr": 1611,
+      "fix_sha": "0d57c57a68d6c3f0cf1d708ab380b10e092c759f",
+      "files": {
+        "case.json": "cad74308a052845a3090cb908f8aa921bdeee8d97483b3f544114609fc5fbf6f",
+        "fix.diff": "e01bfab57c15b6ac633ef64a12bfbff48e0dc97ad2a849f502c9baadadfdd420",
+        "review.diff": "d5cfa4c0f1d270f3a1a31622bca516bc4d6502501609bafebdcbabb5ab83a4f7"
+      },
+      "case_digest": "eaab8dbb3d562e2a2fe2708775b68858a3b06871c8379d11ab731a52b2d497cb"
+    },
+    {
+      "case_id": "httpx-python313-support",
+      "kind": "control",
+      "repo": "encode/httpx",
+      "license": "BSD-3-Clause",
+      "introducing_pr": 3460,
+      "review_base_sha": "26d48e0634e6ee9cdc0533996db289ce4b430177",
+      "review_head_sha": "c7c13f18a5af4c64c649881b2fe8dbd72a519c32",
+      "files": {
+        "case.json": "8b12a657074c0848c3c85ab6ae0ed126683f9367eea06504811003e5f8372234",
+        "review.diff": "7c7041e611013793c4f231b05ddb9f54e467ee5dbecd41589bac643cc85d1bbe"
+      },
+      "case_digest": "dd11ec42ad01e3fe8cd2d798b909f84f2a88063d2f339006fbf415b59b621314"
+    },
+    {
+      "case_id": "json-be-skip-to-escape",
+      "kind": "bug",
+      "repo": "serde-rs/json",
+      "license": "Apache-2.0",
+      "introducing_pr": 1161,
+      "review_base_sha": "54381d6fee21cb05439937a0f5f286177c21d3f6",
+      "review_head_sha": "859ead8e6d60f4eaed97f7ac2b18f879bec5afe5",
+      "fix_pr": 1173,
+      "fix_sha": "8b314a77bf57ad8d6089536fea1b3c3b303cba92",
+      "files": {
+        "case.json": "66e109aae626610a2ff6c7fd8481b54418aac4022d1c9b32754c8f5760ee59bd",
+        "fix.diff": "f6747645d7f448900476dfb5b1402c3583594ddf521b36dc399c22bd9a758f4c",
+        "review.diff": "d551f452af9ee079d252470668af007fd9d7d0620bf78310c8770b4e0e0f569b"
+      },
+      "case_digest": "6e160a8cb00e20e15d64e02f85b62cb2679eb8774be0034492ac199128452a1a"
+    },
+    {
+      "case_id": "json-hashmap-128bit-keys",
+      "kind": "control",
+      "repo": "serde-rs/json",
+      "license": "Apache-2.0",
+      "introducing_pr": 1188,
+      "review_base_sha": "27a4ca9d7a62394fe8f0103f3d91de59f055a4c4",
+      "review_head_sha": "599228d5dc52a0f1595fe4bd901821f70d0317a5",
+      "files": {
+        "case.json": "355bf50ca0ca64a73729bf50ed7d103cd0c22b1648950e66503a686332c7a15a",
+        "review.diff": "2a68e6762788c7b7706ea5babeb7e09b2ef91d62c56340ab61874a5e0e5f2a9b"
+      },
+      "case_digest": "4ab887e018c498069766df19635b2d3f2d708ecffe63a2948827e07838b222aa"
+    },
+    {
+      "case_id": "testify-eventually-closed-channel-panic",
+      "kind": "bug",
+      "repo": "stretchr/testify",
+      "license": "MIT",
+      "introducing_pr": 724,
+      "review_base_sha": "ae5876d09ad6d0d68dff8d969e518db26e0e7969",
+      "review_head_sha": "d84e815d441de9c64a3a2f9336c32acf1e7349d1",
+      "fix_pr": 808,
+      "fix_sha": "f1bd0923b8320ddfb0a8a9d919b5aeb8b7a4cc40",
+      "files": {
+        "case.json": "906bf14523d3a37a63f732efb24f89caaed7769803b8bb19ac0e469021b3d95a",
+        "fix.diff": "f60dfbb68142a37358ca1d23eafa3ef6ee726d039209b5911598c9f9b34a8c00",
+        "review.diff": "f25f009106663f69c5398b879b152014fa26e56caf8affe8f656af52d616b087"
+      },
+      "case_digest": "2c16b8c5e84c148cde8e6f7bfb1ca7537feeb136e24a15c8b56e3d3970e81ff1"
+    },
+    {
+      "case_id": "testify-isnil-unsafepointer",
+      "kind": "bug",
+      "repo": "stretchr/testify",
+      "license": "MIT",
+      "introducing_pr": 707,
+      "review_base_sha": "f1df803a706ef8a5133970c1c25d429d5ae8c615",
+      "review_head_sha": "1ecda4918e78da66a7b6f877b913eb402b3a47c5",
+      "fix_pr": 1319,
+      "fix_sha": "9acc22213e5fbec050904b9886c6df042188cad5",
+      "files": {
+        "case.json": "21e63c6b0cb6f3d6a4b021995bee788b9ccedf00255a6783d5b5c0932d9ab74a",
+        "fix.diff": "82505ebb779eb1b53ea2a23a8e7fdbe072956f7d4b3e1f0fa2f93b8cd95aa3cc",
+        "review.diff": "9bd9cd37406ae365025132215eedf60a086df796c8b3d697a252a8e181e17fab"
+      },
+      "case_digest": "187e273b9e6a0722bbc9b198a374bc8c6d8fb077e609e07409686063a745fc4e"
+    },
+    {
+      "case_id": "testify-struct-public-compare",
+      "kind": "control",
+      "repo": "stretchr/testify",
+      "license": "MIT",
+      "introducing_pr": 1309,
+      "review_base_sha": "f36bfe3c337aa95c86f04c721acdbafb5ffb1611",
+      "review_head_sha": "c5fc9d6b6b21ea89be8480c0dc35e2977ab988f6",
+      "files": {
+        "case.json": "cb7494639a5b85717d49b4b2aaf164739f723203122dfc36f03eabc48fee6600",
+        "review.diff": "69cd6ca6b9fede8b245d1b9f2faf8fb22679908037f5257ce99240c9087b15c7"
+      },
+      "case_digest": "2d9bb863850f994579ee7560f3ba525f0d4ee832957ad60e1b34edf6e477ed75"
+    },
+    {
+      "case_id": "testify-unset-iterate-panic",
+      "kind": "bug",
+      "repo": "stretchr/testify",
+      "license": "MIT",
+      "introducing_pr": 982,
+      "review_base_sha": "c31ea0312f8a96ca55801db5ebdf62119800fb70",
+      "review_head_sha": "ba1076d8b3b67cdaf7bf92c95b3641636a039be2",
+      "fix_pr": 1250,
+      "fix_sha": "2b00d33aec28e4fded71d57517ed4ec9d54cb4e2",
+      "files": {
+        "case.json": "d0656e3330fc456ff98fc7e17eb7d5be5d06ff106654c68ba467c058a8ae1c43",
+        "fix.diff": "960fec8355f0eb15ee1bbcbe2daa1f7885e503ee97f7512e0c722be9333b9c38",
+        "review.diff": "fcf1a7d6f1cbabac146177133c0eb930ec9bc10275c60fc7f4d9c0eae90680fa"
+      },
+      "case_digest": "dea18eb8ed13a0ac708bd2cdead27e6b53bfc73a1c8f9c424cf95d032dc5634b"
+    }
+  ]
+}

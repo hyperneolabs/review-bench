@@ -3,6 +3,30 @@
 Methodology, corpus, schemas, and results are versioned together; published
 results are never silently rewritten.
 
+## 0.4.0 — 2026-09-25
+
+Corpus v0.1 frozen — the set review arms will first run against. Mining
+closed at two batches: 17 bug + 10 control cases across axios, express,
+httpx, serde_json, chi, grpc-go, cobra, urfave/cli, and testify, all mined
+under `cases/sampling-v0.1.md` and admitted against METHODOLOGY.md v0.1
+(per-case `selection.criteria_version`; the freeze refuses mixed-method
+sets). The freeze is the tag `corpus/v0.1` plus the manifest
+`cases/corpus-v0.1.json` — every case_id, kind, upstream SHA provenance, and
+per-file SHA-256 digests — committed before any results are collected, per
+methodology §2.3.
+
+- `tools/freeze_corpus.py`: deterministic manifest generator (cases sorted
+  by id, files sorted by path, fixed rendering — re-running with the same
+  date reproduces byte-identical output), with a `--check` mode.
+- `tools/validate_cases.py`: frozen-manifest enforcement — every committed
+  `cases/corpus-*.json` is regenerated from the case tree and
+  byte-compared, so editing a frozen case, adding a case to a frozen
+  version, or hand-editing the manifest fails CI. Cases declaring an
+  unfrozen later version (mining in progress) do not fail. New per-case
+  `corpus_version` shape check (`corpus/vX.Y`) so a mistyped version cannot
+  silently fall outside every manifest.
+- README and `cases/README.md` status sections updated to the frozen state.
+
 ## 0.3.0 — 2026-09-24
 
 Corpus batch 2 — the Go-language pass queued by batch 1: 11 bug cases + 5

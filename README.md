@@ -43,24 +43,26 @@ This benchmark publishes the whole chain:
 See [METHODOLOGY.md](METHODOLOGY.md) for the full protocol, including what
 this benchmark deliberately does **not** claim.
 
-## Status: corpus mining (batches 1–2 landed)
+## Status: corpus v0.1 frozen; first arms pending
 
-The methodology draft and schemas are published; corpus mining is under way.
-Batch 1 (2026-09-24) landed 6 bug cases and 5 control cases across axios,
-express, httpx, and serde_json; batch 2 (2026-09-24, the Go pass) landed 11
-bug cases and 5 control cases across chi, grpc-go, cobra, urfave/cli, and
-testify — real merged upstream PRs with pinned SHAs, plus the sampling rule
-that governed them. The corpus is **not yet frozen**: until the `corpus/v0.1`
-tag and manifest exist, the set can still grow, and until a `results/` entry
-exists for a corpus version, nothing here ranks anything. This section will
-be updated — never quietly deleted — as drops land.
+The methodology draft and schemas are published, and corpus v0.1 is frozen
+at the tag `corpus/v0.1` with its manifest
+([`cases/corpus-v0.1.json`](cases/corpus-v0.1.json)): 17 bug cases + 10
+control cases across axios, express, httpx, and serde_json (batch 1) and
+chi, grpc-go, cobra, urfave/cli, and testify (batch 2, the Go pass) — real
+merged upstream PRs with pinned SHAs, mined under the written sampling rule.
+The manifest binds every case file by SHA-256 digest, and CI fails on any
+edit to a frozen case — corrections require a new corpus version
+([METHODOLOGY.md §2.3](METHODOLOGY.md#23-versioning-and-freezing)). Until a
+`results/` entry exists for a corpus version, nothing here ranks anything.
+This section will be updated — never quietly deleted — as drops land.
 
 - [x] Methodology v0.1 (draft for public comment)
 - [x] Case / run / report schemas
-- [ ] Corpus v0.1 (known-bug cases + clean controls, with provenance) —
-      batches 1–2 landed 2026-09-24: 17 bug + 10 control cases (axios,
-      express, httpx, serde_json, chi, grpc-go, cobra, urfave/cli, testify);
-      mining continues, not yet frozen at `corpus/v0.1`
+- [x] Corpus v0.1 — frozen 2026-09-25 at `corpus/v0.1` (manifest with
+      digests; 17 bug + 10 control cases across axios, express, httpx,
+      serde_json, chi, grpc-go, cobra, urfave/cli, testify; nominations for
+      a future version welcome)
 - [ ] First multi-engine results on corpus v0.1
 - [ ] Third-party tool arms
 
@@ -69,9 +71,9 @@ be updated — never quietly deleted — as drops land.
 ```
 METHODOLOGY.md   benchmark protocol (corpus, arms, grading, disclosures)
 schema/          JSON schemas: case manifests, arm run records, report envelopes
-cases/           the corpus, one directory per case (batches 1–2 landed; grows until frozen)
+cases/           the corpus, one directory per case (v0.1 frozen: sampling rule + manifest + 27 cases)
 results/         per-arm outputs and aggregate tables (empty until first drop)
-tools/           case validation + corpus build scripts
+tools/           case validation + corpus build/freeze scripts
 CHANGELOG.md     versioned changes to methodology, corpus, and results
 ```
 

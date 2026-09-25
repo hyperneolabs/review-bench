@@ -8,10 +8,18 @@ Checks, per case directory containing a case.json:
   - ground-truth files appear in review.diff (the defect must live in the
     change under review)
 
+Frozen-manifest binding: for every cases/corpus-*.json present, the manifest
+is regenerated from the current case tree (tools/freeze_corpus.py) and
+byte-compared. Any edit to a frozen case, post-freeze addition to a frozen
+version, or hand-edit of the manifest itself fails here — corrections
+require a NEW corpus version (METHODOLOGY.md §2.3). Cases declaring an
+unfrozen later version (mining in progress) do not fail this check.
+
 Usage: python3 tools/validate_cases.py   (from the repository root)
 
 Requires: jsonschema (pip install jsonschema)
 """
+import glob
 import json
 import os
 import re
@@ -22,8 +30,45 @@ try:
 except ImportError:
     sys.exit("jsonschema is required: pip install jsonschema")
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import freeze_corpus  # noqa: E402  (same directory; shares the digest recipe)
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCHEMA = os.path.join(ROOT, "schema", "case.schema.json")
+
+
+def check_frozen_manifests():
+    """Enforce the freeze: every committed manifest must match the tree."""
+    failures = 0
+    manifests = sorted(glob.glob(os.path.join(ROOT, "cases", "corpus-*.json")))
+    if not manifests:
+        print("\nno frozen corpus manifest present (corpus not frozen)")
+        return failures
+    for mpath in manifests:
+        base = os.path.basename(mpath)
+        disk = open(mpath, encoding="utf-8").read()
+        meta = json.loads(disk)
+        version = meta["corpus_version"]
+        expected = "corpus-%s.json" % version[len("corpus/"):]
+        if expected != base:
+            print(f"FAIL {base}: declares corpus_version {version!r} "
+                  f"(filename should be {expected})")
+            failures += 1
+            continue
+        regen = freeze_corpus.render_manifest(
+            freeze_corpus.build_manifest(version, meta["frozen_at"]))
+        if disk != regen:
+            print(f"FAIL {base}: does not match the case tree — a frozen case "
+                  "was edited, a case was added to a frozen version, or the "
+                  "manifest was hand-modified. Corrections require a NEW "
+                  "corpus version (METHODOLOGY.md §2.3)")
+            failures += 1
+        else:
+            counts = meta["case_counts"]
+            print(f"ok   {base}: {len(meta['cases'])} cases "
+                  f"({counts['bug']} bug, {counts['control']} control) "
+                  f"match the tree")
+    return failures
 
 
 def main():
@@ -58,6 +103,9 @@ def main():
         problems = []
         if case["case_id"] != d:
             problems.append(f"directory name {d!r} != case_id {case['case_id']!r}")
+        if not re.fullmatch(r"corpus/v\d+\.\d+", case["corpus_version"]):
+            problems.append(f"corpus_version {case['corpus_version']!r} is not of "
+                            "the form corpus/vX.Y")
         review_diff = os.path.join(cases_dir, d, case["files"]["review_diff"])
         if not os.path.isfile(review_diff) or os.path.getsize(review_diff) == 0:
             problems.append("review.diff missing or empty")
@@ -94,6 +142,7 @@ def main():
             kinds[case["kind"]] = kinds.get(case["kind"], 0) + 1
             print(f"ok   {d} ({case['kind']}, {chg} chg lines)")
 
+    failures += check_frozen_manifests()
     if failures:
         sys.exit(f"\n{failures} case(s) failed validation")
     print(f"\nall {sum(kinds.values())} cases valid: "
